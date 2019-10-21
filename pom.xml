@@ -10,13 +10,21 @@
 
     <url>http://maven.apache.org</url>
 
+    <!--jar包属性信息-->
     <properties>
-        <meituan.nexus.repository>
-            http://maven.sankuai.com/nexus/content/repositories/thirdparty/
-        </meituan.nexus.repository>
-        <meituan.nexus.snapshot.repository>
-            http://maven.sankuai.com/nexus/content/repositories/3rdPartySnapshot/
-        </meituan.nexus.snapshot.repository>
+        <spring-boot-starter-aop-version>2.0.3.RELEASE</spring-boot-starter-aop-version>
+        <okhttp-version>3.11.0</okhttp-version>
+        <testng-version>6.14.3</testng-version>
+        <commons-codec-version>1.12</commons-codec-version>
+        <lombok-version>1.18.4</lombok-version>
+        <annotations-version>2.0.1</annotations-version>
+        <guava-version>28.0-jre</guava-version>
+        <reflections-version>0.9.11</reflections-version>
+        <fastjson-version>1.2.61</fastjson-version>
+        <commons-lang3-version>3.9</commons-lang3-version>
+        <assertj-core-verson>3.13.2</assertj-core-verson>
+        <meituan.nexus.repository>http://maven.sankuai.com/nexus/content/repositories/thirdparty/</meituan.nexus.repository>
+        <meituan.nexus.snapshot.repository>http://maven.sankuai.com/nexus/content/repositories/3rdPartySnapshot/</meituan.nexus.snapshot.repository>
     </properties>
 
     <!--jar包依赖-->
@@ -24,81 +32,75 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-aop</artifactId>
-            <version>2.0.3.RELEASE</version>
+            <version>${spring-boot-starter-aop-version}</version>
         </dependency>
         <dependency>
             <groupId>com.squareup.okhttp3</groupId>
             <artifactId>okhttp</artifactId>
-            <version>3.11.0</version>
+            <version>${okhttp-version}</version>
         </dependency>
         <dependency>
             <groupId>org.testng</groupId>
             <artifactId>testng</artifactId>
-            <version>6.14.3</version>
+            <version>${testng-version}</version>
         </dependency>
         <dependency>
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>
-            <version>1.12</version>
+            <version>${commons-codec-version}</version>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.4</version>
+            <version>${lombok-version}</version>
         </dependency>
-
         <dependency>
             <groupId>com.google.code.findbugs</groupId>
             <artifactId>annotations</artifactId>
-            <version>2.0.1</version>
+            <version>${annotations-version}</version>
         </dependency>
-
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>28.0-jre</version>
+            <version>${guava-version}</version>
         </dependency>
-
         <dependency>
             <groupId>org.reflections</groupId>
             <artifactId>reflections</artifactId>
-            <version>0.9.11</version>
+            <version>${reflections-version}</version>
         </dependency>
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>fastjson</artifactId>
-            <version>1.2.61</version>
+            <version>${fastjson-version}</version>
         </dependency>
-
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>3.9</version>
+            <version>${commons-lang3-version}</version>
         </dependency>
-
         <!-- https://mvnrepository.com/artifact/org.assertj/assertj-core -->
         <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
-            <version>3.13.2</version>
+            <version>${assertj-core-verson}</version>
             <scope>test</scope>
         </dependency>
-
     </dependencies>
 
-    <!--发布sdk,需要替换成公司内部的-->
-    <distributionManagement>
-        <repository>
-            <id>meituan-nexus-releases</id>
-            <name>Meituan Nexus Repository</name>
-            <url>http://maven.sankuai.com/nexus/content/repositories/releases/</url>
-        </repository>
-        <snapshotRepository>
-            <id>meituan-nexus-snapshots</id>
-            <name>Meituan Nexus Repository</name>
-            <url>http://maven.sankuai.com/nexus/content/repositories/snapshots/</url>
-        </snapshotRepository>
-    </distributionManagement>
+    <!--发布sdk,需要替换成公司私有的maven仓库地址，下面以meituan示例-->
+    <!--<distributionManagement>-->
+        <!--<repository>-->
+            <!--<id>meituan-nexus-releases</id>-->
+            <!--<name>Meituan Nexus Repository</name>-->
+            <!--<url>http://maven.sankuai.com/nexus/content/repositories/releases/</url>-->
+        <!--</repository>-->
+        <!--<snapshotRepository>-->
+            <!--<id>meituan-nexus-snapshots</id>-->
+            <!--<name>Meituan Nexus Repository</name>-->
+            <!--<url>http://maven.sankuai.com/nexus/content/repositories/snapshots/</url>-->
+        <!--</snapshotRepository>-->
+    <!--</distributionManagement>-->
 
     <build>
         <plugins>

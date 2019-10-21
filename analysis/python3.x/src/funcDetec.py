@@ -130,9 +130,9 @@ def collisonDect(server_id,root_path,diff_path,upload_url):
                             and int(lineNo) <= int(lineNoList[1]):
                         logging.debug("")
                         collisonFunc.append(funcName)
-        except IOError ,e:
+        except IOError as e:
             logging.error(u"文件打开存在异常,请检查源文件: %s" %(e.message))
-        except RuntimeError ,err:
+        except RuntimeError as err:
             logging.error(err.message)
     logging.info(u"碰撞后得到函数列表如下: %s" %(",".join(collisonFunc)))
 
