@@ -3,7 +3,7 @@
 ## rattler 
 
 [![License](https://img.shields.io/badge/License-GPL%202.0-blue.svg)](LICENSE)
-[![Build Status](https://api.travis-ci.org/airfer/rattler.svg?branch=master)](https://travis-ci.com/airfer/rattler)
+[![Build Status](https://api.travis-ci.com/airfer/rattler.svg?branch=master)](https://travis-ci.com/airfer/rattler)
 [![GitHub issues](https://img.shields.io/github/issues/airfer/rattler.svg)](https://github.com/airfer/rattler/issues)
 [![codecov](https://codecov.io/gh/airfer/rattler/branch/master/graph/badge.svg)](https://codecov.io/gh/airfer/rattler)
 
