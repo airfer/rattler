@@ -12,9 +12,21 @@ cache:
     - "$HOME/.m2/repository"
 
 script:
-  # boot repeater console
+  # swith jdk8
+  # description - https://travis-ci.community/t/oracle-jdk-11-and-10-are-pre-installed-not-the-openjdk-builds/785/3】
+  - PATH=$(echo "$PATH" | sed -e 's/:\/usr\/local\/lib\/jvm\/openjdk11\/bin//')
+  - JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk-amd64
+  - mvn clean cobertura:cobertura -Dmaven.test.skip=false
+
+  # try rattler-func-detection install using python2.x
   - cd ./analysis/python2.x
   - python setup.py install --user
+  - cd -
+
+  # try rattler-func-detection install using python3.x
+  - cd ./analysis/python3.x
+  - sudo apt-get install python3-setuptools
+  - python3 setup.py install --user
   - cd -
 
 after_success:
