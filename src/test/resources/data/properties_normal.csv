@@ -1,0 +1,6 @@
+propertyKey,propertyValue
+chain_capture_switch,true
+upload_url,http://upload.domain.info.com/chain/test
+package_name,com.airfer.rattler.data
+refresh_interval,-1
+server_id,airfer_rattler_test

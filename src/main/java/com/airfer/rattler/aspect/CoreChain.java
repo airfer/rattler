@@ -27,6 +27,7 @@ import org.reflections.util.ConfigurationBuilder;
 import org.reflections.util.FilterBuilder;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.stereotype.Component;
+import sun.misc.BASE64Encoder;
 import sun.reflect.generics.tree.ClassSignature;
 
 import java.lang.reflect.Method;
@@ -39,7 +40,6 @@ import java.util.stream.Collectors;
  * Date: 2019/9/27 上午10:32
  */
 @Slf4j
-@Aspect
 @Component
 public class CoreChain {
 
@@ -119,10 +119,7 @@ public class CoreChain {
             log.info("链路收集开启...");
             coreChainCapture();
             //刷新间隔设置为-1,不启动定时刷新
-            if( -1L == getRefreshInterval() ){
-                log.info("定时任务开启...");
-                uploadChainMapInfoScheduleTask();
-            }
+            uploadChainMapInfoScheduleTask();
         }else{
             log.info("链路收集关闭！");
         }
@@ -154,7 +151,7 @@ public class CoreChain {
             updateChainMap(chainName,methodNameList);
             //将获取的信息采用异步的方式定时更新到db中
             //uploadChainMapInfoScheduleTask();
-            log.info("CoreChainClass is updated: {}",JSON.toJSONString(coreChainMap));
+            log.info("核心链路被更新: {}",JSON.toJSONString(coreChainMap));
         }catch(Exception e){
             log.error(e.getMessage());
             e.printStackTrace();
@@ -178,7 +175,7 @@ public class CoreChain {
             updateChainMap(chainName,methodNameList);
             //定时更新
             //uploadChainMapInfoScheduleTask();
-            log.info("CoreChainMethod is updated: {}",JSON.toJSONString(coreChainMap));
+            log.info("核心链路被更新: {}",JSON.toJSONString(coreChainMap));
         }catch(Exception e){
             log.error(e.getMessage());
             e.printStackTrace();
@@ -213,21 +210,31 @@ public class CoreChain {
 
     //定时任务刷新
     public static void uploadChainMapInfoScheduleTask(){
-        ETCP_QA_CLIENT_SCHEDULED_POOL.scheduleWithFixedDelay(()->{
-            log.info("ChainMapInfo: {}", JSON.toJSONString(coreChainMap));
-            coreChainCapture();
-            //每1个小时刷洗一次
-        },1L, getRefreshInterval(), TimeUnit.SECONDS);
+        try{
+            Long refreshInterval=getRefreshInterval();
+            if(refreshInterval>0) {
+                log.info("定时任务开启...");
+                ETCP_QA_CLIENT_SCHEDULED_POOL.scheduleWithFixedDelay(() -> {
+                    log.info("ChainMapInfo: {}", JSON.toJSONString(coreChainMap));
+                    coreChainCapture();
+                    //每1个小时刷洗一次
+                }, 1L,refreshInterval, TimeUnit.SECONDS);
+            }
+        }catch(IllegalArgumentException e){
+            log.error("",e);
+        }catch(Exception e){
+            log.error("",e);
+        }
     }
 
     /**
      * 链路收集核心方法，用于收集
      */
-    public static void coreChainCapture(){
+    public static String coreChainCapture(){
         //对package进行预先判断
         if(StringUtils.isEmpty(getPackageInfo())){
-            log.error("The package waitting for scan is empty");
-            throw new RuntimeException("packageInfo is emtpy");
+            log.error(ErrorCodeEnum.PACKAGE_INFO_IS_BLANK.getMessage());
+            throw new RuntimeException(ErrorCodeEnum.PACKAGE_INFO_IS_BLANK.getMessage());
         }
         List<ClassLoader> classLoadersList = new LinkedList<ClassLoader>();
         classLoadersList.add(ClasspathHelper.contextClassLoader());
@@ -249,7 +256,7 @@ public class CoreChain {
         List<String> methodNameList=methodsWithAnnotationed.stream()
                 .map(method -> {
                     if (!method.isAnnotationPresent(CoreChainMethod.class)) {
-                        throw new RuntimeException("reflections has unexpected error!");
+                        throw new RuntimeException(ErrorCodeEnum.UNEXCEPTED_ERROR.getMessage());
                     }
                     CoreChainMethod coreChainMethod = method.getAnnotation(CoreChainMethod.class);
                     updateChainMap(coreChainMethod.coreChainName(), Lists.newArrayList(method.getName()));
@@ -263,7 +270,7 @@ public class CoreChain {
         List<String> classList= classesWithAnnationed.stream()
                 .map(classinfo ->{
                     if(! classinfo.isAnnotationPresent(CoreChainClass.class)){
-                        throw new RuntimeException("reflections has unexpected error!");
+                        throw new RuntimeException(ErrorCodeEnum.UNEXCEPTED_ERROR.getMessage());
                     }
                     CoreChainClass coreChainClass=classinfo.getAnnotation(CoreChainClass.class);
                     Method[] methods=classinfo.getDeclaredMethods();
@@ -281,32 +288,38 @@ public class CoreChain {
         //定时任务开启的情况下，如果收集的链路信息和上一次相同，则不进行数据上送
         if(StringUtils.equalsIgnoreCase(CoreChainMapStr,lastCoreChainMapStr)){
             log.info(ErrorCodeEnum.CHAIN_INFO_REPEATE_ERROR.getMessage());
-            return;
+            return "";
         }
         //将获取的链路信息和服务标识进行关联
         response.put(getServerId(),coreChainMap);
+        BASE64Encoder encoder = new BASE64Encoder();
         //将信息上传到远程服务器,目前只支持http方式传送
-        try{
-            Integer times=0;
-            Integer loopNum=3;
-            String  res=null;
-            while(times++ < loopNum){
-                res= HttpClients.uploadCoreChainInfo(
-                        PropertiesProvider.getProperties(CHAIN_UPLOAD_URL),
-                        JSON.toJSONString(response));
-                if(StringUtils.isBlank(res)){
-                    log.error("upload core chain info get null");
-                    Thread.sleep(3000L);
-                    continue;
+        if(!StringUtils.equals(ErrorCodeEnum.DOES_NOT_SUPPORT_UPLOAD.getCode().toString(),PropertiesProvider.getProperties(CHAIN_UPLOAD_URL))
+                && !coreChainMap.isEmpty()){
+            try{
+                Integer times=0;
+                Integer loopNum=3;
+                String  res=null;
+                while(times++ < loopNum){
+                    res= HttpClients.uploadCoreChainInfo(
+                            PropertiesProvider.getProperties(CHAIN_UPLOAD_URL),
+                            JSON.toJSONString(response));
+                    if(StringUtils.isBlank(res)){
+                        log.error(ErrorCodeEnum.UPLOAD_CORE_CHAIN_GET_NULL_ERROR.getMessage());
+                        Thread.sleep(3000L);
+                        continue;
+                    }
+                    break;
                 }
-                break;
+                Preconditions.checkNotNull(res, ErrorCodeEnum.CHAIN_INFO_UPLOAD_ERROR.getMessage());
+                log.info(ErrorCodeEnum.CHAIN_INFO_UPLOAD_SUCCESS.getMessage());
+                lastCoreChainMapStr=CoreChainMapStr;
+            }catch(Exception e){
+                log.error(ErrorCodeEnum.UPLOAD_CORE_CHAIN_FAIL_ERROR.getMessage(),e);
+                return encoder.encode(JSON.toJSONString(response).getBytes());
             }
-            Preconditions.checkNotNull(res, ErrorCodeEnum.CHAIN_INFO_UPLOAD_ERROR.getMessage());
-            log.info(ErrorCodeEnum.CHAIN_INFO_UPLOAD_SUCCESS.getMessage());
-            lastCoreChainMapStr=CoreChainMapStr;
-        }catch(Exception e){
-            log.error("upload core chain info fail: ",e);
         }
+        return encoder.encode(JSON.toJSONString(response).getBytes());
     }
 }
 

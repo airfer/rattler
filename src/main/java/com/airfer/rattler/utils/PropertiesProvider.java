@@ -26,7 +26,7 @@ public class PropertiesProvider {
             throw new RuntimeException(ErrorCodeEnum.PARAM_LOST.getMessage());
         }
         InputStream in = PropertiesProvider.class.getClassLoader().getResourceAsStream("rattler.properties");
-        //String filePath = System.getProperty("user.dir") + "/resource/unicorn.properties";
+        //String filePath = System.getProperty("user.dir") + "/resource/unicorn.chain";
         Properties properties=null;
         try {
             BufferedReader br = new BufferedReader(new InputStreamReader(in, Charset.forName("utf-8")));
@@ -34,7 +34,7 @@ public class PropertiesProvider {
             properties.load(br);
         } catch (IOException e) {
             log.error(ErrorCodeEnum.UNEXCEPTED_ERROR.getMessage(),e);
-            e.printStackTrace();
+            throw new RuntimeException(ErrorCodeEnum.UNEXCEPTED_ERROR.getMessage());
         }
         String propValue=properties.getProperty(keyWord);
         Preconditions.checkNotNull(propValue,ErrorCodeEnum.GET_PROPERTIES_ERROR.getMessage());

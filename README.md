@@ -92,7 +92,10 @@ rattler是一个侵入式的核心链路信息收集工具，通过CoreChainClas
 ### 注解引入 
 
 注解引入，有两种引入方式。可以通过CoreChainClass注解和CoreChainMethod注解引入。由于目前是侵入式收集，会直接修改代码，所以最好和RD一起来做这个事情。
-由于链路收集的收集采用静态扫描方式，所以理论上不会对注入服务造成性能影响。为了避免对线上服务造成潜在影响，可以在线上环境可以关闭链路信息收集以及信息上送服务，如果关闭请参见配置说明部分
+由于链路收集的收集采用静态扫描方式，所以理论上不会对注入服务造成性能影响。为了避免对线上服务造成潜在影响，可以在线上环境可以关闭链路信息收集以及信息上送服务，如果关闭请参见配置说明部分。
+
+> 由于[CoreChain](/src/main/java/com/airfer/rattler/aspect/CoreChain.java)通过Component引入，所以在注解引入后需要在ComponentScan配置中添加rattler所在的包名，示例如下所示。如果对本项目重新打包并变更包名则可省去扫描包添加的步骤。当前对注解标注的权重信息留在下一期支持
+
 
 - CoreChainClass注解引入
 ```java
@@ -123,7 +126,14 @@ public class QueryService{
        }
    }
 }
+```
 
+- ComponentScan扫描包添加 
+```java
+@SpringBootApplication(exclude = {DataSourceAutoConfiguration.class,MongoAutoConfiguration.class,MongoAutoConfiguration.class, MongoDataAutoConfiguration.class})
+@ComponentScan(basePackages = {"com.airfer.rattler"})
+public class Application {
+}
 ```
 
 ## 配置文件使用 
@@ -131,20 +141,21 @@ public class QueryService{
 服务引入jar包，并添加链路注解后，需要添加rattler配置文件。添加方式为在resource目录下新增rattler.properties文件，内容示例如下：
 ```text
 #链路上报开关，true开启，false关闭。在线上环境可以选择关闭【必填】
-chain_capture_switch="true"
+chain_capture_switch=true
 
 #链路信息的上送接口，采用post方式进行上送【选填】|【链路开关打开必填】
-upload_url="http://upload.domain.info.com/chain"
+#upload_url=-1 表示不进行上送
+upload_url=http://upload.domain.info.com/chain/test
 
 #待扫描的服务package名称，目前不支持多package配置【必填】|【链路开关打开必填】
-package_name="com.airfer.rattler"
+package_name=com.airfer.rattler.data
 
 #在链路开关开启且后端服务启动后，rattler会按照指定的刷新频率刷新收集，单位秒【选填】|【链路开关打开必填】
 # refresh_interval=-1 表示不启动定时刷新
-refresh_interval=30
+refresh_interval=-1
 
 #server_id唯一标识一个服务，和美团的appkey是同一个概念【选填】|【链路开关打开必填】
-server_id="airfer_rattler"
+server_id=airfer_rattler_test
 ```
 
 ## rattler-func-detection
@@ -204,10 +215,8 @@ Options:
 
 - rattler基于JDK8开发，使用了很多新特性，比如stream，对于基于低于JDK8的服务版本暂不支持
 - 目前rattler仅适用于JAVA后端服务，对于非JAVA服务以及前端暂不支持
-- rattler-func-detection工具目前仅适配了python2.x版本,python3.x待开发
 
 ## 排期计划
 
-- rattler-func-detection python3.x版本适配 预计2019/11
-- 方法权重值纳入链路冲撞分析范围 预计2019/12
+- 方法权重值纳入链路冲撞分析范围 预计2019/11
 

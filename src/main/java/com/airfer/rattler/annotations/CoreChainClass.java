@@ -14,7 +14,7 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface CoreChainClass {
-    String coreChainName() default "12";
+    String coreChainName() default "";
     MethodWeightEnum weightEnum() default MethodWeightEnum.LOW;
 }
 

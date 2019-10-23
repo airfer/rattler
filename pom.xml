@@ -12,7 +12,7 @@
 
     <!--jar包属性信息-->
     <properties>
-        <spring-boot-starter-aop-version>2.0.3.RELEASE</spring-boot-starter-aop-version>
+        <spring-boot-starter-version>2.0.3.RELEASE</spring-boot-starter-version>
         <okhttp-version>3.11.0</okhttp-version>
         <testng-version>6.14.3</testng-version>
         <commons-codec-version>1.12</commons-codec-version>
@@ -23,8 +23,7 @@
         <fastjson-version>1.2.61</fastjson-version>
         <commons-lang3-version>3.9</commons-lang3-version>
         <assertj-core-verson>3.13.2</assertj-core-verson>
-        <meituan.nexus.repository>http://maven.sankuai.com/nexus/content/repositories/thirdparty/</meituan.nexus.repository>
-        <meituan.nexus.snapshot.repository>http://maven.sankuai.com/nexus/content/repositories/3rdPartySnapshot/</meituan.nexus.snapshot.repository>
+        <commons-csv-version>1.7</commons-csv-version>
     </properties>
 
     <!--jar包依赖-->
@@ -32,7 +31,7 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-aop</artifactId>
-            <version>${spring-boot-starter-aop-version}</version>
+            <version>${spring-boot-starter-version}</version>
         </dependency>
         <dependency>
             <groupId>com.squareup.okhttp3</groupId>
@@ -84,7 +83,25 @@
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
             <version>${assertj-core-verson}</version>
+        </dependency>
+        <!--spring test framework-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <version>${spring-boot-starter-version}</version>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.junit.vintage</groupId>
+                    <artifactId>junit-vintage-engine</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <!--common-csv-->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-csv</artifactId>
+            <version>${commons-csv-version}</version>
         </dependency>
     </dependencies>
 
@@ -110,6 +127,20 @@
                 <configuration>
                     <source>1.8</source>
                     <target>1.8</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.22.0</version>
+                <configuration>
+                    <suiteXmlFiles>
+                        <file>
+                            src/test/resources/testng.xml
+                        </file>
+                    </suiteXmlFiles>
+                    <parallel>classes</parallel>
+                    <threadCount>1</threadCount>
                 </configuration>
             </plugin>
             <plugin>
