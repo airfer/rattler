@@ -4,7 +4,7 @@
 <suite name="etcp-test" verbose="1" >
     <test name="etcp-account">
         <classes>
-            <!--class name="com.airfer.rattler.chain.CoreChainTest"/-->
+            <class name="com.airfer.rattler.chain.CoreChainTest"/>
             <class name="com.airfer.rattler.chain.ProtertiesTest"/>
         </classes>
     </test>

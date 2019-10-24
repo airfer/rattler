@@ -1,13 +1,11 @@
 package com.airfer.rattler.chain;
 
 import com.airfer.rattler.app.Application;
-import com.airfer.rattler.aspect.CoreChain;
 import com.airfer.rattler.bean.PropertiesException;
 import com.airfer.rattler.bean.PropertiesNormal;
 import com.airfer.rattler.provider.TestDataProvider;
 import com.airfer.rattler.utils.PropertiesProvider;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.testng.annotations.Test;

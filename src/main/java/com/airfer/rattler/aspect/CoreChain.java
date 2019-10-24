@@ -31,6 +31,7 @@ import sun.misc.BASE64Encoder;
 import sun.reflect.generics.tree.ClassSignature;
 
 import java.lang.reflect.Method;
+import java.net.URL;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
@@ -227,12 +228,21 @@ public class CoreChain {
         }
     }
 
+    private static Collection<URL> distinctUrls(Collection<URL> urls) {
+        Map<String, URL> distinct = new LinkedHashMap<String, URL>(urls.size());
+        for (URL url : urls) {
+            distinct.put(url.toExternalForm(), url);
+        }
+        return distinct.values();
+    }
+
     /**
      * 链路收集核心方法，用于收集
      */
     public static String coreChainCapture(){
         //对package进行预先判断
-        if(StringUtils.isEmpty(getPackageInfo())){
+        String packageInfo=getPackageInfo();
+        if(StringUtils.isEmpty(packageInfo)){
             log.error(ErrorCodeEnum.PACKAGE_INFO_IS_BLANK.getMessage());
             throw new RuntimeException(ErrorCodeEnum.PACKAGE_INFO_IS_BLANK.getMessage());
         }
@@ -240,6 +250,8 @@ public class CoreChain {
         classLoadersList.add(ClasspathHelper.contextClassLoader());
         classLoadersList.add(ClasspathHelper.staticClassLoader());
 
+        //http://www.voidcn.com/article/p-xvhwzlaz-btn.html
+        Collection<URL> result=ClasspathHelper.forClassLoader(classLoadersList.toArray(new ClassLoader[0]));
         //构建反射类
         Reflections reflections = new Reflections(new ConfigurationBuilder()
                 .setScanners(
@@ -248,8 +260,8 @@ public class CoreChain {
                         new ResourcesScanner(),
                         new MethodAnnotationsScanner(),
                         new TypeAnnotationsScanner())
-                .setUrls(ClasspathHelper.forClassLoader(classLoadersList.toArray(new ClassLoader[0])))
-                .filterInputsBy(new FilterBuilder().include(FilterBuilder.prefix(getPackageInfo()))));
+                .setUrls(distinctUrls(result))
+                .filterInputsBy(new FilterBuilder().include(FilterBuilder.prefix(packageInfo))));
 
         //先获取方法注解
         Set<Method> methodsWithAnnotationed=reflections.getMethodsAnnotatedWith(CoreChainMethod.class);
