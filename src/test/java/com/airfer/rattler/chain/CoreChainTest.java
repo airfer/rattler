@@ -3,13 +3,17 @@ package com.airfer.rattler.chain;
 import com.airfer.rattler.app.Application;
 import com.airfer.rattler.aspect.CoreChain;
 import com.airfer.rattler.bean.CoreChainNormal;
+import com.airfer.rattler.enums.ErrorCodeEnum;
 import com.airfer.rattler.provider.TestDataProvider;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.TypeReference;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.testng.annotations.Test;
+import sun.misc.BASE64Decoder;
+import java.util.concurrent.ConcurrentMap;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -28,14 +32,22 @@ public class CoreChainTest extends AbstractTestNGSpringContextTests {
     private CoreChain coreChain;
 
     @Test(
-        description = "链路信息获取校验",
-        dataProvider= "CoreChainInfoTestDataProvider",
-        dataProviderClass = TestDataProvider.class
+            description = "链路信息获取校验",
+            dataProvider= "CoreChainInfoTestDataProvider",
+            dataProviderClass = TestDataProvider.class
     )
     public void getCoreChainTest(CoreChainNormal coreChainNormal){
-        assertThat(
-                StringUtils.replace(CoreChain.coreChainCapture(),"\n",""))
-                .contains(coreChainNormal.getCaptureResult());
+        BASE64Decoder decoder = new BASE64Decoder();
+        try{
+            byte[] result=decoder.decodeBuffer(coreChainNormal.getCaptureResult());
+            String rawExpectedStr=new String(result,"UTF-8");
+            ConcurrentMap<String,ConcurrentMap<String,String>> rawExpectedMap=JSON.parseObject(rawExpectedStr,
+                    new TypeReference<ConcurrentMap<String,ConcurrentMap<String,String>>>(){});
+            assertThat(rawExpectedMap.equals(CoreChain.coreChainCapture())).withFailMessage("maps diff");
+        }catch(Exception e){
+            e.printStackTrace();
+            assertThat(true).isFalse().withFailMessage(ErrorCodeEnum.UNEXCEPTED_ERROR.getMessage());
+        }
     }
 
 }

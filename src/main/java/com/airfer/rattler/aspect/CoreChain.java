@@ -29,8 +29,6 @@ import org.reflections.util.ConfigurationBuilder;
 import org.reflections.util.FilterBuilder;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.stereotype.Component;
-import sun.misc.BASE64Encoder;
-import sun.reflect.generics.tree.ClassSignature;
 
 import java.lang.reflect.Method;
 import java.net.URL;
@@ -239,7 +237,7 @@ public class CoreChain {
     /**
      * 链路收集核心方法，用于收集
      */
-    public static String coreChainCapture(){
+    public static ConcurrentMap<String,ConcurrentMap<String,String>> coreChainCapture(){
         //对package进行预先判断
         String packageInfo=getPackageInfo();
         if(StringUtils.isEmpty(packageInfo)){
@@ -297,11 +295,10 @@ public class CoreChain {
         //定时任务开启的情况下，如果收集的链路信息和上一次相同，则不进行数据上送
         if(StringUtils.equalsIgnoreCase(CoreChainMapStr,lastCoreChainMapStr)){
             log.info(ErrorCodeEnum.CHAIN_INFO_REPEATE_ERROR.getMessage());
-            return "";
+            return null;
         }
         //将获取的链路信息和服务标识进行关联
         response.put(getServerId(),coreChainMap);
-        BASE64Encoder encoder = new BASE64Encoder();
         //将信息上传到远程服务器,目前只支持http方式传送
         if(!StringUtils.equals(ErrorCodeEnum.DOES_NOT_SUPPORT_UPLOAD.getCode().toString(),PropertiesProvider.getProperties(CHAIN_UPLOAD_URL))
                 && !coreChainMap.isEmpty()){
@@ -325,10 +322,10 @@ public class CoreChain {
                 lastCoreChainMapStr=CoreChainMapStr;
             }catch(Exception e){
                 log.error(ErrorCodeEnum.UPLOAD_CORE_CHAIN_FAIL_ERROR.getMessage(),e);
-                return encoder.encode(JSON.toJSONString(response).getBytes());
+                return response;
             }
         }
-        return encoder.encode(JSON.toJSONString(response).getBytes());
+        return response;
     }
 }
 
