@@ -20,7 +20,7 @@ import static org.assertj.core.api.Assertions.*;
  */
 @Slf4j
 @SpringBootTest(classes= Application.class)
-public class CoreChainTest  extends AbstractTestNGSpringContextTests {
+public class CoreChainTest extends AbstractTestNGSpringContextTests {
     /**
      * 获取coreChain实例
      */

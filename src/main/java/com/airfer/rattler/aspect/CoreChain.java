@@ -9,12 +9,14 @@ import com.alibaba.fastjson.JSON;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.reflections.Reflections;
@@ -41,6 +43,7 @@ import java.util.stream.Collectors;
  * Date: 2019/9/27 上午10:32
  */
 @Slf4j
+@Aspect
 @Component
 public class CoreChain {
 
@@ -126,15 +129,15 @@ public class CoreChain {
         }
     }
 
-    //@Around("PointCuts.coreChainClassAnnotationPoint()")
     /**
      * 本意是用作coreChainClass的切面，目前采用其他方式
      * @param proceedingJoinPoint
      */
     @Deprecated
+    @Around(value = "PointCuts.chainClassAroundPoint()")
     public void coreChainClassAround(ProceedingJoinPoint proceedingJoinPoint){
         try{
-            ClassSignature classSignature=(ClassSignature)proceedingJoinPoint.getSignature();
+            Object classSignature=proceedingJoinPoint.getTarget();
             Method[] methods=classSignature.getClass().getDeclaredMethods();
 
             List<String> methodNameList= Lists.newArrayList();
@@ -142,29 +145,24 @@ public class CoreChain {
             CoreChainClass coreChainClass= AnnotationUtils.findAnnotation(classSignature.getClass(), CoreChainClass.class);
             String chainName=coreChainClass.coreChainName();
             Integer methodWeight=coreChainClass.weightEnum().getCode();
-
             //获取方法名称信息列表
             Arrays.stream(methods).forEach(method -> {
                 methodNameList.add(method.getName());
             });
-
-            //更新ChainMap
-            updateChainMap(chainName,methodNameList);
-            //将获取的信息采用异步的方式定时更新到db中
-            //uploadChainMapInfoScheduleTask();
-            log.info("核心链路被更新: {}",JSON.toJSONString(coreChainMap));
+            Map<String,String> result= ImmutableMap.of(chainName,methodNameList.toString());
+            log.info(JSON.toJSONString(result));
         }catch(Exception e){
-            log.error(e.getMessage());
             e.printStackTrace();
         }
     }
 
-    //@Around("PointCuts.coreChainMethodAnnotaionPoint()")
+
     /**
      * 本意是用作coreChainMethod的切面，目前采用其他方式
      * @param proceedingJoinPoint
      */
     @Deprecated
+    @Around("PointCuts.chainMethodAroundPoint()")
     public void coreChainMethodAround(ProceedingJoinPoint proceedingJoinPoint){
         try{
             MethodSignature methodSignature=(MethodSignature)proceedingJoinPoint.getSignature();
@@ -172,13 +170,10 @@ public class CoreChain {
             String chainName=coreChainMethod.coreChainName();
             String methodName=methodSignature.getName();
             List<String> methodNameList=Lists.newArrayList(methodName);
-            //更新ChainMap
-            updateChainMap(chainName,methodNameList);
-            //定时更新
-            //uploadChainMapInfoScheduleTask();
             log.info("核心链路被更新: {}",JSON.toJSONString(coreChainMap));
+            Map<String,String> result= ImmutableMap.of(chainName,methodNameList.toString());
+            log.info(JSON.toJSONString(result));
         }catch(Exception e){
-            log.error(e.getMessage());
             e.printStackTrace();
         }
     }
@@ -228,6 +223,11 @@ public class CoreChain {
         }
     }
 
+    /**
+     * 去重urls
+     * @param urls url集合
+     * @return 去重之后的结果
+     */
     private static Collection<URL> distinctUrls(Collection<URL> urls) {
         Map<String, URL> distinct = new LinkedHashMap<String, URL>(urls.size());
         for (URL url : urls) {
@@ -274,8 +274,6 @@ public class CoreChain {
                     updateChainMap(coreChainMethod.coreChainName(), Lists.newArrayList(method.getName()));
                     return method.getName();})
                 .collect(Collectors.toList());
-        log.info("method with CoreChainMethod annotions: {}",Joiner.on(",").skipNulls().join(methodNameList));
-        log.info("coreChainMapInfo: {}",JSON.toJSONString(coreChainMap));
 
         //获取指定类上的注解
         Set<Class<?>> classesWithAnnationed=reflections.getTypesAnnotatedWith(CoreChainClass.class);
@@ -294,9 +292,8 @@ public class CoreChain {
                     );
                     return classinfo.getName();
                 }).collect(Collectors.toList());
-        log.info("class with CoreChainClass annotions: {}",Joiner.on(",").skipNulls().join(classList));
         String CoreChainMapStr=JSON.toJSONString(coreChainMap);
-        log.info("coreChainMapInfo: {}",CoreChainMapStr);
+
         //定时任务开启的情况下，如果收集的链路信息和上一次相同，则不进行数据上送
         if(StringUtils.equalsIgnoreCase(CoreChainMapStr,lastCoreChainMapStr)){
             log.info(ErrorCodeEnum.CHAIN_INFO_REPEATE_ERROR.getMessage());

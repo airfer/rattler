@@ -6,6 +6,7 @@
         <classes>
             <class name="com.airfer.rattler.chain.CoreChainTest"/>
             <class name="com.airfer.rattler.chain.ProtertiesTest"/>
+            <class name="com.airfer.rattler.chain.AspectTest"/>
         </classes>
     </test>
 </suite>
