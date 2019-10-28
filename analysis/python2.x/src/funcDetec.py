@@ -91,8 +91,10 @@ def codeDiffStatic(filePath):
                     changeDiffRes = changeDiff.groupdict()
                     if not changeDiffRes:
                         raise RuntimeError(u"@@ -a,b +c,d @@ 解析失败")
-                    fileNameLine[fileName].append(int(changeDiffRes['begin']) +
-                                                  int(changeDiffRes['interval'])/2)
+                    #将变更的具体行数统计进去
+                    for index in range(0,int(changeDiffRes['interval2'])):
+                        lineNo=int(changeDiffRes['begin2']) + index
+                        fileNameLine[fileName].append(lineNo)
                 else:
                     continue
     logging.info("The line changed in sourceFile: " + str(fileNameLine))
@@ -127,7 +129,7 @@ def collisonDect(server_id,root_path,diff_path,upload_url):
                 for funcName,lineNoList in funcLineMap.items():
                     #对于map为空的情况，则直接进行下一层计算
                     if lineNoList and int(lineNo) >= int(lineNoList[0]) \
-                            and int(lineNo) <= int(lineNoList[1]):
+                            and int(lineNo) <= int(lineNoList[1]) and funcName not in collisonFunc:
                         logging.debug("")
                         collisonFunc.append(funcName)
         except IOError ,e:
