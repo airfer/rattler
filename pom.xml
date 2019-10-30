@@ -4,11 +4,9 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.airfer.rattler</groupId>
+    <groupId>com.github.airfer</groupId>
     <artifactId>rattler</artifactId>
-    <version>1.0-SNAPSHOT</version>
-
-    <url>http://maven.apache.org</url>
+    <version>1.0.0-SNAPSHOT</version>
 
     <!--jar包属性信息-->
     <properties>
@@ -105,20 +103,6 @@
         </dependency>
     </dependencies>
 
-    <!--发布sdk,需要替换成公司私有的maven仓库地址，下面以meituan示例-->
-    <!--<distributionManagement>-->
-        <!--<repository>-->
-            <!--<id>meituan-nexus-releases</id>-->
-            <!--<name>Meituan Nexus Repository</name>-->
-            <!--<url>http://maven.sankuai.com/nexus/content/repositories/releases/</url>-->
-        <!--</repository>-->
-        <!--<snapshotRepository>-->
-            <!--<id>meituan-nexus-snapshots</id>-->
-            <!--<name>Meituan Nexus Repository</name>-->
-            <!--<url>http://maven.sankuai.com/nexus/content/repositories/snapshots/</url>-->
-        <!--</snapshotRepository>-->
-    <!--</distributionManagement>-->
-
     <build>
         <plugins>
             <plugin>
@@ -127,6 +111,8 @@
                 <configuration>
                     <source>1.8</source>
                     <target>1.8</target>
+                    <encoding>UTF-8</encoding>
+                    <showDeprecation>true</showDeprecation>
                 </configuration>
             </plugin>
             <plugin>
@@ -146,6 +132,72 @@
                     <threadCount>1</threadCount>
                 </configuration>
             </plugin>
+            <!--plugin for distribution-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <version>2.4</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>2.2-beta-5</version>
+            </plugin>
+            <!--javadoc plugin-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>3.0.0-M1</version>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>3.0.1</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>jar-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- 为了发布到MAVEN中央仓库而用的插件 -->
+            <plugin>
+                <groupId>org.sonatype.plugins</groupId>
+                <artifactId>nexus-staging-maven-plugin</artifactId>
+                <version>1.6.7</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <serverId>wangyukun-ossrh</serverId>
+                    <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                    <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                </configuration>
+            </plugin>
+            <!--gpg plugin-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+                <version>1.5</version>
+                <executions>
+                    <execution>
+                        <id>sign-artifacts</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>sign</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <!--cobertura plugin-->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>cobertura-maven-plugin</artifactId>
@@ -167,4 +219,47 @@
             </plugin>
         </plugins>
     </build>
+
+    <!-- 这里是为了发布到MAVEN中央仓库所做的配置 -->
+    <distributionManagement>
+        <snapshotRepository>
+            <id>wangyukun-ossrh</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+        <repository>
+            <id>wangyukun-ossrh</id>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+    </distributionManagement>
+
+    <!--project info-->
+    <url>https://github.com/airfer/rattle</url>
+    <description>Intrusive core chain detection tool</description>
+
+    <licenses>
+        <license>
+            <name>GPLv3</name>
+            <url>http://www.gnu.org/licenses/gpl-3.0.txt</url>
+        </license>
+    </licenses>
+
+    <organization>
+        <name>Airfer Open Source</name>
+        <url>https://github.com/airfer</url>
+    </organization>
+
+    <developers>
+        <developer>
+            <name>wangyukun</name>
+            <email>airfer@126.com</email>
+            <organizationUrl>https://github.com/airfer</organizationUrl>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:https://github.com/airfer/rattler.git</connection>
+        <developerConnection>scm:git:https://github.com/airfer/rattler.git</developerConnection>
+        <url>https://github.com/airfer/rattler</url>
+    </scm>
+
 </project>

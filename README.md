@@ -2,7 +2,7 @@
 
 ## rattler 
 
-[![License](https://img.shields.io/badge/License-GPL%202.0-blue.svg)](LICENSE)
+[![License](https://img.shields.io/badge/License-GPL%203.0-red.svg)](LICENSE)
 [![Build Status](https://api.travis-ci.com/airfer/rattler.svg?branch=master)](https://travis-ci.com/airfer/rattler)
 [![GitHub issues](https://img.shields.io/github/issues/airfer/rattler.svg)](https://github.com/airfer/rattler/issues)
 [![codecov](https://codecov.io/gh/airfer/rattler/branch/master/graph/badge.svg)](https://codecov.io/gh/airfer/rattler)
@@ -16,7 +16,10 @@
 
 rattler是一个侵入式的核心链路信息收集工具，通过CoreChainClass注解以及CoreChainMethod注解来收集服务的链路信息，然后将链路信息上送到指定的服务器，目前仅支持http上送。
 
-代码的变更最后反馈到核心链路的变更，这样就有了一个量化的数据来衡量本次需求对原有核心链路的影响
+代码的变更最后反馈到核心链路的变更，这样就有了一个量化的数据来衡量本次需求对原有核心链路的影响.
+
+> **需要注意的是：这里核心链路的概念并非指的是多个微服务之间通过HTTP或者RPC组成的调用链路，而是指在单个微服务本身中函数之间的链路调用关系。本工具更加适用于偏底层的核心服务，比如支付的记账管理、搜索引擎的广告检索、金融对账结算等类似场景。**
+
 
 ## 链路信息采集方式对比 
 
@@ -83,9 +86,9 @@ rattler是一个侵入式的核心链路信息收集工具，通过CoreChainClas
 在使用之前需要事先通过pom引入jar文件，可以使用本开源的jar包，也可以自行编译上传到私有maven仓库，示例：
 ```xml
 <dependency>
-    <groupId>com.airfer.rattler</groupId>
+    <groupId>com.github.airfer</groupId>
     <artifactId>rattler</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0.0-SNAPSHOT</version>
 </dependency>
 ```
 
@@ -195,7 +198,7 @@ Options:
 
 ## 链路碰撞分析 
 
-假设我们现在有两个核心链路A和A1,两条链路中的所有调用函数都可通过CoreChain类注解进行收集。而需求迭代所造成的代码变动可通过rattler-func-detection进行收集，链路碰撞示意图如下所示：
+假设我们现在有两个核心链路A和A1(***单个服务内部函数之间的链路调用关系，非微服务之间的调用，A-G、A1-G1皆为函数***),两条链路中的所有调用函数都可通过CoreChain类注解进行收集。而需求迭代所造成的代码变动可通过rattler-func-detection进行收集，链路碰撞示意图如下所示：
 ![detect](https://airfer.github.io/images/rattler/func-detection.jpg)
 
 ## 结果预览
