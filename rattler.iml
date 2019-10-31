@@ -80,5 +80,6 @@
     <orderEntry type="library" scope="TEST" name="Maven: org.springframework:spring-test:5.0.7.RELEASE" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: org.xmlunit:xmlunit-core:2.5.1" level="project" />
     <orderEntry type="library" name="Maven: org.apache.commons:commons-csv:1.7" level="project" />
+    <orderEntry type="library" name="Maven: com.github.rholder:guava-retrying:2.0.0" level="project" />
   </component>
 </module>

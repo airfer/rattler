@@ -6,8 +6,9 @@ import com.airfer.rattler.client.HttpClients;
 import com.airfer.rattler.enums.ErrorCodeEnum;
 import com.airfer.rattler.utils.PropertiesProvider;
 import com.alibaba.fastjson.JSON;
+import com.github.rholder.retry.*;
 import com.google.common.base.Joiner;
-import com.google.common.base.Preconditions;
+import com.google.common.base.Predicates;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -69,6 +70,31 @@ public class CoreChain {
      * 服务唯一表示信息，和美团appkey概念相同
      */
     private static final String SERVER_ID="server_id";
+
+    /**
+     * 定义retry对象
+     */
+    private static Retryer<Boolean> retryer = RetryerBuilder.<Boolean>newBuilder()
+            .retryIfResult(Predicates.equalTo(false))
+            .retryIfExceptionOfType(RuntimeException.class)
+            .retryIfRuntimeException()
+            //2s重试一次,最多重试3次
+            .withWaitStrategy(WaitStrategies.fixedWait(2,TimeUnit.SECONDS))
+            .withStopStrategy(StopStrategies.stopAfterAttempt(3))
+            .build();
+
+    /**
+     * 定义callable对象
+     */
+    private static Callable<Boolean> callable=new Callable<Boolean>() {
+        @Override
+        public Boolean call() throws Exception {
+            String res=HttpClients.uploadCoreChainInfo(
+                    PropertiesProvider.getProperties(CHAIN_UPLOAD_URL),
+                    JSON.toJSONString(response));
+            return StringUtils.isBlank(res) ? false: true;
+        }
+    };
 
     /**
      * 获取配置文件中的收集开关，true开启收集
@@ -154,7 +180,6 @@ public class CoreChain {
         }
     }
 
-
     /**
      * 本意是用作coreChainMethod的切面，目前采用其他方式
      * @param proceedingJoinPoint
@@ -222,22 +247,9 @@ public class CoreChain {
     }
 
     /**
-     * 去重urls
-     * @param urls url集合
-     * @return 去重之后的结果
+     * 反射核心方法，获取方法或者类上的注解信息
      */
-    private static Collection<URL> distinctUrls(Collection<URL> urls) {
-        Map<String, URL> distinct = new LinkedHashMap<String, URL>(urls.size());
-        for (URL url : urls) {
-            distinct.put(url.toExternalForm(), url);
-        }
-        return distinct.values();
-    }
-
-    /**
-     * 链路收集核心方法，用于收集
-     */
-    public static ConcurrentMap<String,ConcurrentMap<String,String>> coreChainCapture(){
+    private static void reflectionsCore(){
         //对package进行预先判断
         String packageInfo=getPackageInfo();
         if(StringUtils.isEmpty(packageInfo)){
@@ -258,24 +270,23 @@ public class CoreChain {
                         new ResourcesScanner(),
                         new MethodAnnotationsScanner(),
                         new TypeAnnotationsScanner())
-                .setUrls(distinctUrls(result))
+                .setUrls(result)
                 .filterInputsBy(new FilterBuilder().include(FilterBuilder.prefix(packageInfo))));
 
         //先获取方法注解
         Set<Method> methodsWithAnnotationed=reflections.getMethodsAnnotatedWith(CoreChainMethod.class);
-        List<String> methodNameList=methodsWithAnnotationed.stream()
+        methodsWithAnnotationed.stream()
                 .map(method -> {
                     if (!method.isAnnotationPresent(CoreChainMethod.class)) {
                         throw new RuntimeException(ErrorCodeEnum.UNEXCEPTED_ERROR.getMessage());
                     }
                     CoreChainMethod coreChainMethod = method.getAnnotation(CoreChainMethod.class);
                     updateChainMap(coreChainMethod.coreChainName(), Lists.newArrayList(method.getName()));
-                    return method.getName();})
-                .collect(Collectors.toList());
+                    return method.getName();});
 
         //获取指定类上的注解
         Set<Class<?>> classesWithAnnationed=reflections.getTypesAnnotatedWith(CoreChainClass.class);
-        List<String> classList= classesWithAnnationed.stream()
+        classesWithAnnationed.stream()
                 .map(classinfo ->{
                     if(! classinfo.isAnnotationPresent(CoreChainClass.class)){
                         throw new RuntimeException(ErrorCodeEnum.UNEXCEPTED_ERROR.getMessage());
@@ -284,16 +295,19 @@ public class CoreChain {
                     Method[] methods=classinfo.getDeclaredMethods();
 
                     updateChainMap(coreChainClass.coreChainName(),
-                            Arrays.stream(methods).map(method ->{
-                                return method.getName();
-                            }).collect(Collectors.toList())
+                            Arrays.stream(methods).map(method -> method.getName()).collect(Collectors.toList())
                     );
-                    return classinfo.getName();
-                }).collect(Collectors.toList());
-        String CoreChainMapStr=JSON.toJSONString(coreChainMap);
+                    return classinfo.getName(); });
+    }
 
+    /**
+     * 链路收集核心方法，用于收集链路信息
+     * @return 结果信息
+     */
+    public static ConcurrentMap<String,ConcurrentMap<String,String>> coreChainCapture(){
+        reflectionsCore();
         //定时任务开启的情况下，如果收集的链路信息和上一次相同，则不进行数据上送
-        if(StringUtils.equalsIgnoreCase(CoreChainMapStr,lastCoreChainMapStr)){
+        if(StringUtils.equalsIgnoreCase(lastCoreChainMapStr,JSON.toJSONString(coreChainMap))){
             log.info(ErrorCodeEnum.CHAIN_INFO_REPEATE_ERROR.getMessage());
             return null;
         }
@@ -303,28 +317,13 @@ public class CoreChain {
         if(!StringUtils.equals(ErrorCodeEnum.DOES_NOT_SUPPORT_UPLOAD.getCode().toString(),PropertiesProvider.getProperties(CHAIN_UPLOAD_URL))
                 && !coreChainMap.isEmpty()){
             try{
-                Integer times=0;
-                Integer loopNum=3;
-                String  res=null;
-                while(times++ < loopNum){
-                    res= HttpClients.uploadCoreChainInfo(
-                            PropertiesProvider.getProperties(CHAIN_UPLOAD_URL),
-                            JSON.toJSONString(response));
-                    if(StringUtils.isBlank(res)){
-                        log.error(ErrorCodeEnum.UPLOAD_CORE_CHAIN_GET_NULL_ERROR.getMessage());
-                        Thread.sleep(3000L);
-                        continue;
-                    }
-                    break;
-                }
-                Preconditions.checkNotNull(res, ErrorCodeEnum.CHAIN_INFO_UPLOAD_ERROR.getMessage());
-                log.info(ErrorCodeEnum.CHAIN_INFO_UPLOAD_SUCCESS.getMessage());
-                lastCoreChainMapStr=CoreChainMapStr;
+                retryer.call(callable);
+                lastCoreChainMapStr=JSON.toJSONString(coreChainMap);
             }catch(Exception e){
                 log.error(ErrorCodeEnum.UPLOAD_CORE_CHAIN_FAIL_ERROR.getMessage(),e);
-                return response;
             }
         }
+        log.info(JSON.toJSONString(response));
         return response;
     }
 }

@@ -1,7 +1,9 @@
 package com.airfer.rattler.client;
 
+import com.airfer.rattler.enums.ErrorCodeEnum;
 import com.google.common.collect.ImmutableMap;
 import okhttp3.*;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -127,7 +129,11 @@ public class HttpClients {
      */
     public static String uploadCoreChainInfo(String url,String body){
         Map<String,String> headerMap= ImmutableMap.of("Content-Type", "application/json;charset=utf-8");
-        return sendJsonPostHttpRequest(headerMap,url,body,null,null,null);
+        String response=sendJsonPostHttpRequest(headerMap,url,body,null,null,null);
+        if(! StringUtils.isBlank(response)){
+            return response;
+        }
+        throw new RuntimeException(ErrorCodeEnum.UPLOAD_CORE_CHAIN_GET_NULL_ERROR.getMessage());
     }
 
 
