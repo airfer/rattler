@@ -6,7 +6,7 @@
 
     <groupId>com.github.airfer</groupId>
     <artifactId>rattler</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.0</version>
 
     <!--jar包属性信息-->
     <properties>
@@ -233,6 +233,7 @@
     </distributionManagement>
 
     <!--project info-->
+    <name>rattler</name>
     <url>https://github.com/airfer/rattle</url>
     <description>Intrusive core chain detection tool</description>
 
