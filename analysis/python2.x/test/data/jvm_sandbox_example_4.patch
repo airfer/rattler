@@ -1,0 +1,44 @@
+diff --git a/sandbox-debug-module/src/main/java/com/alibaba/jvm/sandbox/module/debug/util/InterfaceProxyUtils.java b/sandbox-debug-module/src/main/java/com/alibaba/jvm/sandbox/module/debug/util/InterfaceProxyUtils.java
+index 4fee94f..ccbcd09 100644
+--- a/sandbox-debug-module/src/main/java/com/alibaba/jvm/sandbox/module/debug/util/InterfaceProxyUtils.java
++++ b/sandbox-debug-module/src/main/java/com/alibaba/jvm/sandbox/module/debug/util/InterfaceProxyUtils.java
+@@ -15,7 +15,7 @@ import static com.alibaba.jvm.sandbox.api.util.GaStringUtils.getJavaClassName;
+ import static com.alibaba.jvm.sandbox.api.util.GaStringUtils.getJavaClassNameArray;
+ import static java.lang.annotation.ElementType.METHOD;
+ import static java.lang.annotation.RetentionPolicy.RUNTIME;
+-import static java.util.Arrays.deepEquals;
++import static org.apache.commons.lang3.ArrayUtils.getLength;
+ 
+ public class InterfaceProxyUtils {
+ 
+@@ -46,6 +46,20 @@ public class InterfaceProxyUtils {
+                     : proxyMethod.name();
+         }
+ 
++        boolean isEquals(final String[] srcStringArray,
++                         final String[] dstStringArray) {
++            final int length;
++            if ((length = getLength(srcStringArray)) != getLength(dstStringArray)) {
++                return false;
++            }
++            for (int index = 0; index < length; index++) {
++                if (!StringUtils.equals(srcStringArray[index], dstStringArray[index])) {
++                    return false;
++                }
++            }
++            return true;
++        }
++
+         /**
+          * 比较interfaceMethod和targetMethod两个方法是否接近
+          *
+@@ -55,7 +69,8 @@ public class InterfaceProxyUtils {
+          */
+         boolean isCloseTo(final Method interfaceMethod, final Method targetMethod) {
+             return StringUtils.equals(getInterfaceMethodName(interfaceMethod), targetMethod.getName())
+-                    && deepEquals(getJavaClassNameArray(interfaceMethod.getParameterTypes()), getJavaClassNameArray(targetMethod.getParameterTypes()));
++                    && isEquals(getJavaClassNameArray(interfaceMethod.getParameterTypes()), getJavaClassNameArray(targetMethod.getParameterTypes()));
++
+         }
+ 
+         Method getTargetMethod(final Method interfaceMethod, final Object target) throws NoSuchMethodException {

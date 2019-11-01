@@ -1,0 +1,50 @@
+diff --git a/sandbox-api/src/main/java/com/alibaba/jvm/sandbox/api/listener/ext/Behavior.java b/sandbox-api/src/main/java/com/alibaba/jvm/sandbox/api/listener/ext/Behavior.java
+index 3c493de..b8d481c 100644
+--- a/sandbox-api/src/main/java/com/alibaba/jvm/sandbox/api/listener/ext/Behavior.java
++++ b/sandbox-api/src/main/java/com/alibaba/jvm/sandbox/api/listener/ext/Behavior.java
+@@ -1,7 +1,6 @@
+ package com.alibaba.jvm.sandbox.api.listener.ext;
+
+ import java.lang.annotation.Annotation;
+-import java.lang.reflect.AccessibleObject;
+ import java.lang.reflect.Constructor;
+ import java.lang.reflect.InvocationTargetException;
+ import java.lang.reflect.Method;
+@@ -38,13 +37,6 @@ public interface Behavior {
+
+     Annotation[] getDeclaredAnnotations();
+
+-    /**
+-     * 获取被封装的目标对象: Method/Constructor
+-     *
+-     * @return 目标对象
+-     */
+-    AccessibleObject getTarget();
+-
+     /**
+      * 类实现
+      */
+@@ -112,11 +104,6 @@ public interface Behavior {
+             return target.getDeclaredAnnotations();
+         }
+
+-        @Override
+-        public AccessibleObject getTarget() {
+-            return target;
+-        }
+-
+         @Override
+         public int hashCode() {
+             return target.hashCode();
+@@ -196,11 +183,6 @@ public interface Behavior {
+             return target.getDeclaredAnnotations();
+         }
+
+-        @Override
+-        public AccessibleObject getTarget() {
+-            return target;
+-        }
+-
+         @Override
+         public int hashCode() {
+             return target.hashCode();

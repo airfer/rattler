@@ -23,7 +23,8 @@ setup(
         'logging>=0.4.9.6',
         'click>=6.7'
         'setuptools>=16.0',
-        'requests>=2.11.1'
+        'requests>=2.11.1',
+        'ddt>=1.2.1'
     ],
 
     # 添加这个选项，在windows下Python目录的scripts下生成exe文件

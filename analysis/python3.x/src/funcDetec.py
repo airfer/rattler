@@ -17,7 +17,7 @@ def getFunctionStatic(filePath):
     functionLineCount={}
     #定义函数头扫描规则
     funcPattern="(?P<access>public|private|protected)" \
-                "(\s)*(?P<static>static)?(?P<final>final)?(\s)*(?P<returnType>\w+)\s" \
+                "(\s)*(?P<static>static)?(?P<final>final)?(\s)*(?P<returnType>[\w<>]+)\s" \
                 "(?P<funcName>\w+)[(](?P<params>.+)[)](?P<extra>.*)"
     funcPatternExec=re.compile(funcPattern)
     lineNum=0
