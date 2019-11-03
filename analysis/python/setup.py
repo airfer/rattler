@@ -17,7 +17,7 @@ setup(
     keywords="collision rattler-func-detec",
     url="",
     packages=['src'],  # 需要打包的目录列表
-    package_dir = {'':'src'},
+    package_dir = {'':'.'},
     include_package_data = True,
 
     # 需要安装的依赖
