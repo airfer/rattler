@@ -1,9 +1,8 @@
 #encoding=utf-8
 import  logging,requests
-import  re,os,click,json
+import  re,os,click,json,io
 
 logging.basicConfig(level = logging.INFO,format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-#uploadUrl="http://etcp.cx.test.sankuai.com/qa/etcp/funcDetection"
 
 def contains(string,search):
     return True if string.find(search) != -1 else False
@@ -23,7 +22,7 @@ def getFunctionStatic(filePath):
     lineNum=0
     if not os.path.exists(filePath):
         raise RuntimeError(u"该文件不存在: %s" %filePath)
-    with open(filePath,"r+") as fr:
+    with io.open(filePath,"r+",encoding="utf-8") as fr:
         logging.info("filePath: %s" %filePath)
         lines=fr.readlines()
         funcName = ""
@@ -74,7 +73,7 @@ def codeDiffStatic(filePath):
     diffFilePatternExec=re.compile(diffFilePattern)
     lineChangePatternExec=re.compile(lineChangePattern)
 
-    with open(filePath,"r+") as fr:
+    with io.open(filePath,"r+",encoding="utf-8") as fr:
         lines=fr.readlines()
         for line in lines:
             diffRes=diffFilePatternExec.search(line)
@@ -133,9 +132,9 @@ def collisonDect(server_id,root_path,diff_path,upload_url):
                         logging.debug("")
                         collisonFunc.append(funcName)
         except IOError as e:
-            logging.error(u"文件打开存在异常,请检查源文件: %s" %(e.message))
+            logging.error(u"文件打开存在异常,请检查源文件: %s" %(e))
         except RuntimeError as err:
-            logging.error(err.message)
+            logging.error(err)
     logging.info(u"碰撞后得到函数列表如下: %s" %(",".join(collisonFunc)))
 
     """

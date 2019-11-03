@@ -11,19 +11,22 @@ setup(
     name="rattler-func-detection",  #pypi中的名称，pip或者easy_install安装时使用的名称，或生成egg文件的名称
     version="1.0",
     author="wangyukun",
-    author_email="wangyukun06@meituan.com",
+    author_email="airfer@126.com",
     description=("This is a tool for function collision detect"),
     license="GPLv3",
     keywords="collision rattler-func-detec",
     url="",
     packages=['src'],  # 需要打包的目录列表
+    package_dir = {'':'src'},
+    include_package_data = True,
 
     # 需要安装的依赖
     install_requires=[
         'logging>=0.4.9.6',
         'click>=6.7'
         'setuptools>=16.0',
-        'requests>=2.11.1'
+        'requests>=2.11.1',
+        'ddt>=1.2.1'
     ],
 
     # 添加这个选项，在windows下Python目录的scripts下生成exe文件

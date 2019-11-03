@@ -18,13 +18,10 @@ script:
   - JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk-amd64
   - mvn clean cobertura:cobertura -Dmaven.test.skip=false
 
-  # try rattler-func-detection install using python2.x
-  - cd ./analysis/python2.x
+  # try rattler-func-detection install using python2.x && python3.x
+  - cd ./analysis/python
   - python setup.py install --user
-  - cd -
 
-  # try rattler-func-detection install using python3.x
-  - cd ./analysis/python3.x
   - sudo apt-get install python3-setuptools
   - python3 setup.py install --user
   - cd -

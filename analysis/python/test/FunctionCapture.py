@@ -8,13 +8,13 @@
 #-------------------------------------------------------------------------------
 import unittest,ddt
 from src.funcDetec import getFunctionStatic,codeDiffStatic
-from DataProvider import data_func_verify,data_codediff_verify
+from test.DataProvider import data_func_verify,data_codediff_verify
 
 @ddt.ddt
 class FunctionCapture(unittest.TestCase):
-    '''
+    """
     核心链路探查核心功能点验证，采用DataProvider方式进行
-    '''
+    """
 
     '''
     测试核心链路函数捕获的功能
