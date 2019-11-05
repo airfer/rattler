@@ -176,6 +176,14 @@ git diff feature/* master >result.patch
 
 ### 安装方法
 
+#### 通过pip安装
+
+如果不需要对代码进行查看或者二次开发，可以使用pip来进行安装，支持python2.x以及python3.x，命令如下：
+```text
+pip install rattler-func-detection
+```
+
+#### 通过源码安装
 1. 下载源代码，使用python setup.py install进行安装
 2. 使用rattler-func-detection 命令运行,可通过 --help命令查看可选项
 

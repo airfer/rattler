@@ -13,9 +13,10 @@ setup(
     author="wangyukun",
     author_email="airfer@126.com",
     description=("This is a tool for function collision detect"),
+    long_description = '',
     license="GPLv3",
     keywords="collision rattler-func-detec",
-    url="",
+    url="https://github.com/airfer/rattler",
     packages=['src'],  # 需要打包的目录列表
     package_dir = {'':'.'},
     include_package_data = True,
