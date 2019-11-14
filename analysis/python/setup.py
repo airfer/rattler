@@ -24,7 +24,7 @@ setup(
     # 需要安装的依赖
     install_requires=[
         'logging>=0.4.9.6',
-        'click>=6.7'
+        'click>=6.7',
         'setuptools>=16.0',
         'requests>=2.11.1',
         'ddt>=1.2.1'
