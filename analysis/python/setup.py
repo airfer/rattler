@@ -9,7 +9,7 @@ from setuptools import setup
 
 setup(
     name="rattler-func-detection",  #pypi中的名称，pip或者easy_install安装时使用的名称，或生成egg文件的名称
-    version="1.0",
+    version="1.0.1",
     author="wangyukun",
     author_email="airfer@126.com",
     description=("This is a tool for function collision detect"),
@@ -31,7 +31,6 @@ setup(
     ],
 
     # 添加这个选项，在windows下Python目录的scripts下生成exe文件
-    # 注意：模块与函数之间是冒号:
     entry_points={'console_scripts': [
         'rattler-func-detection = src.funcDetec:collisonDect',
     ]},
