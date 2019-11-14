@@ -1,6 +1,14 @@
 #encoding=utf-8
-import  logging,requests
-import  re,os,click,json,io
+import  re,os,click,json,io,logging
+
+try:
+    from logging import NullHandler
+    import requests
+except ImportError:
+    class NullHandler(logging.Handler):
+        def emit(self, record):
+            pass
+logging.getLogger(__name__).addHandler(NullHandler())
 
 logging.basicConfig(level = logging.INFO,format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
