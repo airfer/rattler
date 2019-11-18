@@ -1,4 +1,5 @@
 #encoding=utf-8
+defaultencoding = 'utf-8'
 import  re,os,click,json,io,logging
 
 try:
@@ -29,7 +30,7 @@ def getFunctionStatic(filePath):
     funcPatternExec=re.compile(funcPattern)
     lineNum=0
     if not os.path.exists(filePath):
-        raise RuntimeError(u"该文件不存在: %s" %filePath)
+        raise RuntimeError("file %s not exits!" %filePath)
     with io.open(filePath,"r+",encoding="utf-8") as fr:
         logging.info(u"filePath: %s" %filePath)
         lines=fr.readlines()
@@ -42,7 +43,7 @@ def getFunctionStatic(filePath):
                 resDic=funcSearchRes.groupdict()
                 funcName=resDic["funcName"]
                 if not len(funcName):
-                    raise RuntimeError(u"获取函数名称出错")
+                    raise RuntimeError("get func name error!")
                 functionMapDict[funcName]=1 if resDic["extra"] and  resDic["extra"].find("{") != -1 else 0
                 functionLineCount[funcName]=[lineNum]
             else:
@@ -75,7 +76,7 @@ def codeDiffStatic(filePath):
     fileName=""
     fileNameLine={}
     #定义扫描头的部分
-    diffFilePattern="diff\s--git\sa/(?P<source>(.*))(\s)b/(?P<target>(.*))"
+    diffFilePattern="diff\s--git\sa/(?P<source>(.*java))(\s)b/(?P<target>(.*java))"
     lineChangePattern="@@ -(?P<begin>(\d+)),(?P<interval>(\d+))\s[+](?P<begin2>\d+),(?P<interval2>\d+) @@"
 
     diffFilePatternExec=re.compile(diffFilePattern)
@@ -89,7 +90,7 @@ def codeDiffStatic(filePath):
                 diffResDict=diffRes.groupdict()
                 fileName=diffResDict['source']
                 if not len(fileName):
-                    raise RuntimeError(u"diff --git pattern 解析失败")
+                    raise RuntimeError(u"diff --git pattern parse failed")
                 #为变更的文件统计行数
                 fileNameLine[fileName]=[]
             elif fileName:
@@ -97,13 +98,13 @@ def codeDiffStatic(filePath):
                 if changeDiff:
                     changeDiffRes = changeDiff.groupdict()
                     if not changeDiffRes:
-                        raise RuntimeError(u"@@ -a,b +c,d @@ 解析失败")
+                        raise RuntimeError(u"@@ -a,b +c,d @@ parse failed")
                     #将变更的具体行数统计进去
                     for index in range(0,int(changeDiffRes['interval2'])):
                         lineNo=int(changeDiffRes['begin2']) + index
                         fileNameLine[fileName].append(lineNo)
-                else:
-                    continue
+                #某文件统计结束后，将fileName置空并用于下一次统计
+                fileName=None
     logging.info(u"The line changed in sourceFile: " + str(fileNameLine))
     return fileNameLine
 
@@ -117,14 +118,14 @@ def codeDiffStatic(filePath):
               help=u"server_id,服务唯一标识")
 @click.option('--upload_url',default="",
               help=u"upload_url,数据上送地址")
-def collisonDect(server_id,root_path,diff_path,upload_url):
+def collisonDect(server_id,root_path,diff_path,upload_url=""):
     """
     :param rootPath: 扫描根路径
     :param diffFilePath:
     :return:
     """
     if not (root_path and diff_path):
-        raise RuntimeError(u"rootPath或者diffFilePath为空,请使用 --help查看详情")
+        raise RuntimeError(u"rootPath or diffFilePath is empty,please use --help for help!")
     changeDetail=codeDiffStatic(diff_path)
     collisonFunc=[]
     for fileName,lineNumList in changeDetail.items():
@@ -140,9 +141,11 @@ def collisonDect(server_id,root_path,diff_path,upload_url):
                         logging.debug("")
                         collisonFunc.append(funcName)
         except IOError as e:
-            logging.error(u"文件打开存在异常,请检查源文件: %s" %(e))
+            logging.error(u"error occurs when open file,please check source file: %s" %(e))
+            return
         except RuntimeError as err:
             logging.error(err)
+            return
     logging.info(u"碰撞后得到函数列表如下: %s" %(",".join(collisonFunc)))
 
     """
