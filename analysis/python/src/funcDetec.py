@@ -68,7 +68,7 @@ def getFunctionStatic(filePath):
 
 def codeDiffStatic(filePath):
     """
-    diff_demo   -> diff --git a/etcp-account-service/pom.xml b/etcp-account-service/pom.xml
+    diff_demo   -> diff --git a/account-service/pom.xml b/account-service/pom.xml
     change_demo -> @@ -730,6 +730,19 @@
     :return:
     """
@@ -166,7 +166,6 @@ def collisonDect(server_id,root_path,diff_path,upload_url):
         logging.info("result: %s" %res)
     #如果server_id已指定则返回链路碰撞信息，否则返回函数列表
     return res if res else ",".join(collisonFunc)
-
 
 if __name__ == "__main__":
     #@rootPath : 当前扫描代码的根路径
