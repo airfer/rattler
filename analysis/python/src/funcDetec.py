@@ -31,7 +31,7 @@ def getFunctionStatic(filePath):
     if not os.path.exists(filePath):
         raise RuntimeError(u"该文件不存在: %s" %filePath)
     with io.open(filePath,"r+",encoding="utf-8") as fr:
-        logging.info("filePath: %s" %filePath)
+        logging.info(u"filePath: %s" %filePath)
         lines=fr.readlines()
         funcName = ""
         for line in lines:
@@ -62,7 +62,7 @@ def getFunctionStatic(filePath):
                         funcName=""
                 else:
                     continue
-    logging.info("The mapping relation betweent function and lineNo "+ str(functionLineCount))
+    logging.info(u"The mapping relation betweent function and lineNo "+ str(functionLineCount))
     #logging.info("The Map dict: "+ str(functionMapDict))
     return functionLineCount
 
@@ -104,7 +104,7 @@ def codeDiffStatic(filePath):
                         fileNameLine[fileName].append(lineNo)
                 else:
                     continue
-    logging.info("The line changed in sourceFile: " + str(fileNameLine))
+    logging.info(u"The line changed in sourceFile: " + str(fileNameLine))
     return fileNameLine
 
 
@@ -150,7 +150,7 @@ def collisonDect(server_id,root_path,diff_path,upload_url):
     """
     res=""
     #collisonFunc=["openQrAccountMT"]
-    if server_id and collisonFunc:
+    if server_id and collisonFunc and len(upload_url) != 0 and upload_url[0:4] == "http":
         headers={"Content-Type":"application/json;charset=UTF-8",
                  "Connection":"Keep-Alive",'Content-length':'200'};
         response=requests.post(url=upload_url,json={"server_id":server_id,
@@ -160,10 +160,10 @@ def collisonDect(server_id,root_path,diff_path,upload_url):
             raise RuntimeError(u"上送请求返回信息为空")
         res=json.loads(response.text)
         if res["resCode"] != "0":
-            logging.error("Result: %s" %(response.text))
+            logging.error(u"Result: %s" %(response.text))
             raise RuntimeError(u"服务端处理出现异常,请检查服务端日志")
         #请求信息正常，返回链路碰撞数据
-        logging.info("result: %s" %res)
+        logging.info(u"result: %s" %res)
     #如果server_id已指定则返回链路碰撞信息，否则返回函数列表
     return res if res else ",".join(collisonFunc)
 
