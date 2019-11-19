@@ -9,7 +9,7 @@ from setuptools import setup
 
 setup(
     name="rattler-func-detection",  #pypi中的名称，pip或者easy_install安装时使用的名称，或生成egg文件的名称
-    version="1.0.1",
+    version="1.0.2",
     author="wangyukun",
     author_email="airfer@126.com",
     description=("This is a tool for function collision detect"),
