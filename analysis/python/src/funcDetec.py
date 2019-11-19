@@ -103,7 +103,7 @@ def codeDiffStatic(filePath):
                     for index in range(0,int(changeDiffRes['interval2'])):
                         lineNo=int(changeDiffRes['begin2']) + index
                         fileNameLine[fileName].append(lineNo)
-                fileName=None
+                    fileName=None
     logging.info(u"源文件变动的行数如下: " + str(fileNameLine))
     return fileNameLine
 
