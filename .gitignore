@@ -102,6 +102,7 @@ func_detection.*
 
 # PyBuilder
 target/
+.DS_Store
 
 # Jupyter Notebook
 .ipynb_checkpoints

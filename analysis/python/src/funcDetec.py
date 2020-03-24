@@ -2,13 +2,13 @@
 import  re,os,click,json,io,logging
 
 try:
-    from logging import NullHandler
     import requests
-except ImportError:
+except ImportError as er:
     class NullHandler(logging.Handler):
         def emit(self, record):
             pass
-logging.getLogger(__name__).addHandler(NullHandler())
+    raise ImportError("引入requests库失败！",er.message)
+#logging.getLogger(__name__).addHandler(NullHandler())
 
 logging.basicConfig(level = logging.INFO,format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 

@@ -25,10 +25,10 @@ public class PropertiesProvider {
         if(StringUtils.isBlank(keyWord)){
             throw new RuntimeException(ErrorCodeEnum.PARAM_LOST.getMessage());
         }
-        InputStream in = PropertiesProvider.class.getClassLoader().getResourceAsStream("rattler.properties");
         //String filePath = System.getProperty("user.dir") + "/resource/unicorn.chain";
         Properties properties=null;
         try {
+            InputStream in = PropertiesProvider.class.getClassLoader().getResourceAsStream("rattler.properties");
             BufferedReader br = new BufferedReader(new InputStreamReader(in, Charset.forName("utf-8")));
             properties = new Properties();
             properties.load(br);
