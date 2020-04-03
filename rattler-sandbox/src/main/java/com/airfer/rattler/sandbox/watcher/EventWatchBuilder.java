@@ -1,5 +1,6 @@
 package com.airfer.rattler.sandbox.watcher;
 
+import com.airfer.rattler.sandbox.chains.ChainAgreInterface;
 import com.airfer.rattler.sandbox.strategys.InjectionStrategy;
 import com.alibaba.jvm.sandbox.api.event.Event;
 import com.alibaba.jvm.sandbox.api.filter.AccessFlags;
@@ -155,6 +156,23 @@ public class EventWatchBuilder {
          */
         IBuildingForBehavior onBehavior(String pattern);
 
+        /**
+         * 对于多个行为进行同时添加,无需再重复调用OnBehavior
+         *
+         * @param patterns 行为模式的array
+         * @return
+         */
+        IBuildingForBehavior onBehaviors(String[] patterns);
+
+        /**
+         * 根据链路信息获取数据
+         * @param identityId 服务唯一标识
+         * @param name 链路标识
+         * @param chainAgreInterface 链路聚合接口
+         * @return
+         */
+        IBuildingForBehavior onChain(String identityId,String name,ChainAgreInterface chainAgreInterface);
+
     }
 
     /**
@@ -180,8 +198,6 @@ public class EventWatchBuilder {
 
         IBuildingForBehavior onBehavior(String pattern);
 
-        IBuildingForBehavior onBehaviors(String[] patterns);
-
         IBuildingForClass onClass(String pattern);
 
         IBuildingForClass onClass(Class<?> clazz);
@@ -189,6 +205,7 @@ public class EventWatchBuilder {
         IBuildingForClass onAnyClass();
 
         IBuildingForWatching onWatching();
+
 
         IBuildingForBehavior onStrategy(InjectionStrategy strategy);
 
@@ -514,6 +531,19 @@ public class EventWatchBuilder {
         }
 
         @Override
+        public IBuildingForBehavior onBehaviors(String[] patterns) {
+            for(String pattern: patterns){
+                this.onBehavior(pattern);
+            }
+            return bfBehaviors.get(0);
+        }
+
+        @Override
+        public IBuildingForBehavior onChain(String identityId, String name, ChainAgreInterface chainAgreInterface) {
+            return this.onBehaviors(chainAgreInterface.getChainMethods(identityId,name));
+        }
+
+        @Override
         public IBuildingForBehavior onAnyBehavior() {
             switch (patternType) {
                 case REGEX:
@@ -619,15 +649,6 @@ public class EventWatchBuilder {
         @Override
         public IBuildingForBehavior onBehavior(final String pattern) {
             return bfClass.onBehavior(pattern);
-        }
-
-        //对于批量的behavior patterns进行添加,比较绕，但是没有问题
-        @Override
-        public IBuildingForBehavior onBehaviors(String[] patterns) {
-            for(String pattern : patterns){
-                bfClass.onBehavior(pattern);
-            }
-            return this;
         }
 
         @Override

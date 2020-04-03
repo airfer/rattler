@@ -30,6 +30,13 @@
         <commons-csv-version>1.7</commons-csv-version>
         <guava-retrying-version>2.0.0</guava-retrying-version>
     </properties>
+    <dependencies>
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>fastjson</artifactId>
+            <version>${fastjson-version}</version>
+        </dependency>
+    </dependencies>
 
     <build>
         <plugins>

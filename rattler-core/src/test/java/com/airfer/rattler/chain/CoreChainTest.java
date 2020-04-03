@@ -43,7 +43,7 @@ public class CoreChainTest extends AbstractTestNGSpringContextTests {
             String rawExpectedStr=new String(result,"UTF-8");
             ConcurrentMap<String,ConcurrentMap<String,String>> rawExpectedMap=JSON.parseObject(rawExpectedStr,
                     new TypeReference<ConcurrentMap<String,ConcurrentMap<String,String>>>(){});
-            assertThat(rawExpectedMap.equals(CoreChain.coreChainCapture())).withFailMessage("maps diff");
+            assertThat(rawExpectedMap.equals(CoreChain.coreChainCapture())).isTrue().withFailMessage("maps diff");
         }catch(Exception e){
             e.printStackTrace();
             assertThat(true).isFalse().withFailMessage(ErrorCodeEnum.UNEXCEPTED_ERROR.getMessage());

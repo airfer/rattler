@@ -275,29 +275,27 @@ public class CoreChain {
 
         //先获取方法注解
         Set<Method> methodsWithAnnotationed=reflections.getMethodsAnnotatedWith(CoreChainMethod.class);
-        methodsWithAnnotationed.stream()
-                .map(method -> {
-                    if (!method.isAnnotationPresent(CoreChainMethod.class)) {
-                        throw new RuntimeException(ErrorCodeEnum.UNEXCEPTED_ERROR.getMessage());
-                    }
-                    CoreChainMethod coreChainMethod = method.getAnnotation(CoreChainMethod.class);
-                    updateChainMap(coreChainMethod.coreChainName(), Lists.newArrayList(method.getName()));
-                    return method.getName();});
+        for(Method method: methodsWithAnnotationed){
+            if (!method.isAnnotationPresent(CoreChainMethod.class)) {
+                throw new RuntimeException(ErrorCodeEnum.UNEXCEPTED_ERROR.getMessage());
+            }
+            CoreChainMethod coreChainMethod = method.getAnnotation(CoreChainMethod.class);
+            updateChainMap(coreChainMethod.coreChainName(), Lists.newArrayList(method.getName()));
+        }
 
         //获取指定类上的注解
         Set<Class<?>> classesWithAnnationed=reflections.getTypesAnnotatedWith(CoreChainClass.class);
-        classesWithAnnationed.stream()
-                .map(classinfo ->{
-                    if(! classinfo.isAnnotationPresent(CoreChainClass.class)){
-                        throw new RuntimeException(ErrorCodeEnum.UNEXCEPTED_ERROR.getMessage());
-                    }
-                    CoreChainClass coreChainClass=classinfo.getAnnotation(CoreChainClass.class);
-                    Method[] methods=classinfo.getDeclaredMethods();
+        for(Class<?> classinfo: classesWithAnnationed){
+            if(! classinfo.isAnnotationPresent(CoreChainClass.class)){
+                throw new RuntimeException(ErrorCodeEnum.UNEXCEPTED_ERROR.getMessage());
+            }
+            CoreChainClass coreChainClass=classinfo.getAnnotation(CoreChainClass.class);
+            Method[] methods=classinfo.getDeclaredMethods();
 
-                    updateChainMap(coreChainClass.coreChainName(),
-                            Arrays.stream(methods).map(method -> method.getName()).collect(Collectors.toList())
-                    );
-                    return classinfo.getName(); });
+            updateChainMap(coreChainClass.coreChainName(),
+                    Arrays.stream(methods).map(method -> method.getName()).collect(Collectors.toList())
+            );
+        }
     }
 
     /**
@@ -313,7 +311,6 @@ public class CoreChain {
         }
         //将获取的链路信息和服务标识进行关联
         response.put(getServerId(),coreChainMap);
-        //将信息上传到远程服务器,目前只支持http方式传送
         if(!StringUtils.equals(ErrorCodeEnum.DOES_NOT_SUPPORT_UPLOAD.getCode().toString(),PropertiesProvider.getProperties(CHAIN_UPLOAD_URL))
                 && !coreChainMap.isEmpty()){
             try{

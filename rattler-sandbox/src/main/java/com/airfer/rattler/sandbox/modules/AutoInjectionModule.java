@@ -1,6 +1,8 @@
 package com.airfer.rattler.sandbox.modules;
 
 
+import com.airfer.rattler.sandbox.chains.MockChainAgre;
+import com.airfer.rattler.sandbox.strategys.RandomStrategy;
 import com.alibaba.jvm.sandbox.api.Information;
 import com.alibaba.jvm.sandbox.api.Module;
 import com.alibaba.jvm.sandbox.api.ProcessController;
@@ -28,8 +30,18 @@ public class AutoInjectionModule implements Module{
     public void repairCheckState() {
 
         new EventWatchBuilder(moduleEventWatcher)
-                .onClass("com.taobao.demo.Clock")
-                .onBehavior("checkState")
+                .onClass("*")
+                /**
+                 * onChain基于链路的注入
+                 * @param identityId 服务唯一标识
+                 * @name 链路名称
+                 */
+                .onChain("airfer_rattler_test","chainName01",new MockChainAgre())
+                /**
+                 * onStrategy 可选择注入的策略
+                 * 目前选择的是随机注入策略
+                 */
+                .onStrategy(new RandomStrategy())
                 .onWatch(new AdviceListener() {
 
                     /**
@@ -41,7 +53,7 @@ public class AutoInjectionModule implements Module{
 
                         // 在此，你可以通过ProcessController来改变原有方法的执行流程
                         // 这里的代码意义是：改变原方法抛出异常的行为，变更为立即返回；void返回值用null表示
-                        ProcessController.returnImmediately(null);
+                        ProcessController.throwsImmediately(new RuntimeException("autoInjection"));
                     }
                 });
 

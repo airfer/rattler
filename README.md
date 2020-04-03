@@ -248,10 +248,55 @@ step6: 故障注入系统在刷新时,会强制从本地缓存中读取配置信
 
 ### 自动注入
 
-自动注入，通过程序中预设的注入策略，比如随机注入指定比例比如50%,30%,或者指定方法名称包含某关键词等。自动注入的方式只需要做好策略选择即可。
+自动注入，通过程序中预设的注入策略来进行故障（Exception）注入，无需人工手动在平台上进行选择。
+目前提供以下自动注入方式：
 
-```text
-细节待补充
+- 根据链路信息进行注入,比如基于核心链路名称的注入方式 
+
+- 基于自定义策略的注入,策略可自己来实现, 满足定制化需求
+
+```java
+/**
+ * Author: wangyukun
+ * Date: 2020/4/2 下午5:42
+ */
+@MetaInfServices(Module.class)
+@Information(id = "AutoInjectionModuleBasedOnChain")
+public class AutoInjectionModule implements Module{
+    @Resource
+    private ModuleEventWatcher moduleEventWatcher;
+
+    @Command("autoInject")
+    public void repairCheckState() {
+
+        new EventWatchBuilder(moduleEventWatcher)
+                .onClass("*")
+                /**
+                 * onChain基于链路的注入
+                 * @param identityId 服务唯一标识
+                 * @name 链路名称                  
+                 */
+                .onChain("airfer_rattler_test","chainName01",new MockChainAgre())
+                /**
+                 * onStrategy 可选择注入的策略
+                 * 目前选择的是随机注入策略
+                 */
+                .onStrategy(new RandomStrategy())
+                .onWatch(new AdviceListener() {
+                    /**
+                     * 拦截{@code com.taobao.demo.Clock#checkState()}方法，当这个方法抛出异常时将会被
+                     * AdviceListener#afterThrowing()所拦截
+                     */
+                    @Override
+                    protected void afterThrowing(Advice advice) throws Throwable {
+                        // 在此，你可以通过ProcessController来改变原有方法的执行流程
+                        // 这里的代码意义是：改变原方法抛出异常的行为，变更为立即返回；void返回值用null表示
+                        ProcessController.throwsImmediately(new RuntimeException("autoInjection"));
+                    }
+                });
+    }
+}
+
 ```
 
 ## 使用限制
