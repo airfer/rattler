@@ -38,8 +38,7 @@ public class AutoInjectionModule implements Module{
                  */
                 .onChain("airfer_rattler_test","chainName01",new MockChainAgre())
                 /**
-                 * onStrategy 可选择注入的策略
-                 * 目前选择的是随机注入策略
+                 * 示例：抛出运行时异常
                  */
                 .onStrategy(new RandomStrategy())
                 .onWatch(new AdviceListener() {
