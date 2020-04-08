@@ -261,7 +261,7 @@ step6: 故障注入系统在刷新时,会强制从本地缓存中读取配置信
  * Date: 2020/4/2 下午5:42
  */
 @MetaInfServices(Module.class)
-@Information(id = "AutoInjectionModuleBasedOnChain")
+@Information(id = "auto-injection-rattler",author = "wangyukun",version = "0.0.1")
 public class AutoInjectionModule implements Module{
     @Resource
     private ModuleEventWatcher moduleEventWatcher;
