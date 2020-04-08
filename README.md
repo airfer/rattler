@@ -75,7 +75,7 @@ rattler是一个侵入式的核心链路信息收集工具，通过CoreChainClas
 
 2、 利用Reflections的反射机制，静态扫描指定package的标注类或者标注方法
 
-3、 将扫描得到的核心链路数据上送到指定的服务，目前仅支持HTTP
+3、 将扫描得到的核心链路数据上送到指定的服务或者存储在本地（Local），上送方式目前仅支持HTTP
 
 ## 使用方法 
 
@@ -87,7 +87,7 @@ rattler是一个侵入式的核心链路信息收集工具，通过CoreChainClas
 ```xml
 <dependency>
     <groupId>com.github.airfer</groupId>
-    <artifactId>rattler</artifactId>
+    <artifactId>rattler-core</artifactId>
     <version>1.0.0-SNAPSHOT</version>
 </dependency>
 ```
@@ -265,35 +265,42 @@ step6: 故障注入系统在刷新时,会强制从本地缓存中读取配置信
 public class AutoInjectionModule implements Module{
     @Resource
     private ModuleEventWatcher moduleEventWatcher;
-
-    @Command("autoInject")
-    public void repairCheckState() {
-
-        new EventWatchBuilder(moduleEventWatcher)
-                .onClass("*")
-                /**
-                 * onChain基于链路的注入
-                 * @param identityId 服务唯一标识
-                 * @name 链路名称                  
-                 */
-                .onChain("airfer_rattler_test","chainName01",new MockChainAgre())
-                /**
-                 * onStrategy 可选择注入的策略
-                 * 目前选择的是随机注入策略
-                 */
-                .onStrategy(new RandomStrategy())
-                .onWatch(new AdviceListener() {
+    /**
+         * 基于真实的链路方法,自动注入示例
+         */
+        @Command("autoInjectForLocal")
+        public void autoInjectForLocal() {
+            new EventWatchBuilder(moduleEventWatcher)
+                    .onClass("com.*")
                     /**
-                     * 示例：抛出运行时异常 
+                     * onChain基于链路的注入,会根据服务标识以及链路的名称获取方法列表进行注入
+                     * @param identityId 服务唯一标识
+                     * @name 链路名称
                      */
-                    @Override
-                    protected void afterThrowing(Advice advice) throws Throwable {
-                        // 在此，你可以通过ProcessController来改变原有方法的执行流程
-                        // 这里的代码意义是：改变原方法抛出异常的行为，变更为立即返回；void返回值用null表示
-                        ProcessController.throwsImmediately(new RuntimeException("autoInjection"));
-                    }
-                });
-    }
+                    .onChain("airfer_rattler_test","red-alarm",
+                            new LocalChainAgre())
+                    /**
+                     * 如果设置了策略信息，则会根据策略来对方法进行过滤
+                     * 例如：下方设置的为随机50%策略,那么核心链路中50%的方法会进行故障注入
+                     * 策略可自行定义，实现InjectionStrategy接口即可
+                     * 可能存在的情况：
+                     * (1) 核心链路中指定前置的方法进行注入
+                     * (2) 核心链路中对包含某个关键词的方法进行注入
+                     */
+                    .onStrategy(new RandomStrategy())
+                    /**
+                     * 示例：针对获取的方法直接抛出异常
+                     */
+                    .onWatch(new AdviceListener() {
+                        @Override
+                        protected void before(Advice advice) throws Throwable {
+    
+                            // 在此，你可以通过ProcessController来改变原有方法的执行流程
+                            // 这里的代码意义是：改变原方法抛出异常的行为，变更为立即返回；void返回值用null表示
+                            ProcessController.throwsImmediately(new RuntimeException("autoInjection"));
+                        }
+                    });
+        }
 }
 
 ```

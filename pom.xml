@@ -28,6 +28,7 @@
         <commons-lang3-version>3.9</commons-lang3-version>
         <assertj-core-verson>3.13.2</assertj-core-verson>
         <commons-csv-version>1.7</commons-csv-version>
+        <commons-io-version>2.6</commons-io-version>
         <guava-retrying-version>2.0.0</guava-retrying-version>
     </properties>
     <dependencies>
@@ -35,6 +36,16 @@
             <groupId>com.alibaba</groupId>
             <artifactId>fastjson</artifactId>
             <version>${fastjson-version}</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>${commons-io-version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.testng</groupId>
+            <artifactId>testng</artifactId>
+            <version>${testng-version}</version>
         </dependency>
     </dependencies>
 

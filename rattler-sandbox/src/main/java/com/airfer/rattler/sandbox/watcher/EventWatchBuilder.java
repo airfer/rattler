@@ -2,6 +2,7 @@ package com.airfer.rattler.sandbox.watcher;
 
 import com.airfer.rattler.sandbox.chains.ChainAgreInterface;
 import com.airfer.rattler.sandbox.strategys.InjectionStrategy;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.jvm.sandbox.api.event.Event;
 import com.alibaba.jvm.sandbox.api.filter.AccessFlags;
 import com.alibaba.jvm.sandbox.api.filter.ExtFilter;
@@ -14,6 +15,8 @@ import com.alibaba.jvm.sandbox.api.resource.ModuleEventWatcher;
 import com.alibaba.jvm.sandbox.api.resource.ModuleEventWatcher.Progress;
 import com.alibaba.jvm.sandbox.api.util.GaArrayUtils;
 import com.alibaba.jvm.sandbox.api.util.GaStringUtils;
+import com.google.common.collect.Lists;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
 
@@ -40,6 +43,7 @@ import static java.util.regex.Pattern.quote;
  * @author luanjia@taobao.com
  * @since {@code sandbox-api:1.0.10}
  */
+@Slf4j
 public class EventWatchBuilder {
 
     /**
@@ -569,7 +573,7 @@ public class EventWatchBuilder {
         private final PatternGroupList hasAnnotationTypes = new PatternGroupList();
 
         //自动注入策略
-        private InjectionStrategy injectionStrategy;
+        private InjectionStrategy injectionStrategy=null;
 
 
         BuildingForBehavior(final BuildingForClass bfClass,
@@ -581,6 +585,16 @@ public class EventWatchBuilder {
         //获取策略信息
         public InjectionStrategy getInjectionStrategy() {
             return injectionStrategy;
+        }
+
+        //判断是否设置了策略,为设置返回false
+        public Boolean hasStrategy(){
+            return injectionStrategy == null ? false:true;
+        }
+
+        //获取模式信息
+        public String getPattern() {
+            return pattern;
         }
 
         @Override
@@ -742,10 +756,14 @@ public class EventWatchBuilder {
     }
 
     public EventWatchCondition toEventWatchCondition() {
-        //核心链路方法的注解
-        final String coreChainMethod="CoreChainMethod";
         final List<Filter> filters = new ArrayList<Filter>();
+        //打印获取到的behavior
+        List<String> behaviorNames= Lists.newArrayList();
         for (final BuildingForClass bfClass : bfClasses) {
+            for(final BuildingForBehavior buildingForBehavior: bfClass.bfBehaviors){
+                behaviorNames.add(buildingForBehavior.getPattern());
+            }
+            System.out.print(JSON.toJSONString(behaviorNames));
             final Filter filter = new Filter() {
                 @Override
                 public boolean doClassFilter(final int access,
@@ -775,14 +793,14 @@ public class EventWatchBuilder {
                         if ((access & bfBehavior.withAccess) == bfBehavior.withAccess
                                 && patternMatching(javaMethodName, bfBehavior.pattern, patternType)
                                 && bfBehavior.withParameterTypes.patternWith(parameterTypeJavaClassNameArray)
-                                && bfBehavior.hasExceptionTypes.patternHas(throwsTypeJavaClassNameArray)) {
+                                && bfBehavior.hasExceptionTypes.patternHas(throwsTypeJavaClassNameArray)
+                                && bfBehavior.hasAnnotationTypes.patternHas(annotationTypeJavaClassNameArray)) {
                             //对于核心链路数据做另外的处理
-                            if(bfBehavior.hasAnnotationTypes.patternHas(annotationTypeJavaClassNameArray)){
-                                if(Arrays.asList(annotationTypeJavaClassNameArray).contains(coreChainMethod)){
-                                    return bfBehavior.getInjectionStrategy().proceed();
-                                }
-                                return true;
+                            if(bfBehavior.hasStrategy()){
+                                return bfBehavior.getInjectionStrategy().proceed();
                             }
+                            //如果未设置策略则返回true
+                            return true;
                         }//if
                     }//for
 

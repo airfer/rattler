@@ -4,6 +4,7 @@ import com.airfer.rattler.annotations.CoreChainClass;
 import com.airfer.rattler.annotations.CoreChainMethod;
 import com.airfer.rattler.client.HttpClients;
 import com.airfer.rattler.enums.ErrorCodeEnum;
+import com.airfer.rattler.utils.FileUtil;
 import com.airfer.rattler.utils.PropertiesProvider;
 import com.alibaba.fastjson.JSON;
 import com.github.rholder.retry.*;
@@ -30,6 +31,7 @@ import org.reflections.util.ConfigurationBuilder;
 import org.reflections.util.FilterBuilder;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.stereotype.Component;
+
 
 import java.lang.reflect.Method;
 import java.net.URL;
@@ -311,6 +313,11 @@ public class CoreChain {
         }
         //将获取的链路信息和服务标识进行关联
         response.put(getServerId(),coreChainMap);
+        String res=JSON.toJSONString(response);
+        log.info(res);
+        //将获取的结果进行本地存储
+        FileUtil.storeResultToLocal(res,"chain.json");
+        //如果配置了上送地址,则将结果进行上送
         if(!StringUtils.equals(ErrorCodeEnum.DOES_NOT_SUPPORT_UPLOAD.getCode().toString(),PropertiesProvider.getProperties(CHAIN_UPLOAD_URL))
                 && !coreChainMap.isEmpty()){
             try{
@@ -320,7 +327,6 @@ public class CoreChain {
                 log.error(ErrorCodeEnum.UPLOAD_CORE_CHAIN_FAIL_ERROR.getMessage(),e);
             }
         }
-        log.info(JSON.toJSONString(response));
         return response;
     }
 }

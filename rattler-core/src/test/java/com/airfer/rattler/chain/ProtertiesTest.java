@@ -6,9 +6,14 @@ import com.airfer.rattler.bean.PropertiesNormal;
 import com.airfer.rattler.provider.TestDataProvider;
 import com.airfer.rattler.utils.PropertiesProvider;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.testng.annotations.Test;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.concurrent.ConcurrentMap;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -46,5 +51,25 @@ public class ProtertiesTest extends AbstractTestNGSpringContextTests {
     )
     public void propertiesGetUndefined(PropertiesException propertiesException){
         PropertiesProvider.getProperties(propertiesException.getPropertyKey());
+    }
+
+    @Test
+    public void  storeResultToLocal(){
+        String result="{\"airfer_rattler_test\":{\"chainName01\":\"MethodWithCoreChainTest02,MethodWithCoreChainTest01,ClassWithCoreChainTest01,ClassWithCoreChainTest02,ClassWithCoreChainTest03,ClassWithCoreChainTest04\",\"chainName02\":\"MethodWithCoreChainTest03\"}}";
+        String fileName="chainResult.json";
+        try{
+            String folder=System.getProperty("user.home") + "/.rattler";
+            if(! new File(folder).exists()){
+                //一次可以创建单级或者多级目录
+                FileUtils.forceMkdir(new File(folder));
+            }
+            File file = new File(folder + "/"+fileName);
+            //创建一个文件夹，如果由于某些原因导致不能创建，则抛出异常
+            //将结果写入文件
+            FileUtils.writeStringToFile(file,result,"utf-8",false);
+        }catch(IOException e){
+            e.printStackTrace();
+            throw new RuntimeException("链路检测结果写入文件失败");
+        }
     }
 }
