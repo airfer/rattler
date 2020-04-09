@@ -22,7 +22,7 @@ import javax.annotation.Resource;
  * Date: 2020/4/2 下午5:42
  */
 @MetaInfServices(Module.class)
-@Information(id = "auto-injection-rattler",author = "wangyukun06@meituan.com",version = "0.0.1")
+@Information(id = "auto-injection-rattler",author = "wangyukun",version = "0.0.1")
 public class AutoInjectionModule implements Module{
     @Resource
     private ModuleEventWatcher moduleEventWatcher;

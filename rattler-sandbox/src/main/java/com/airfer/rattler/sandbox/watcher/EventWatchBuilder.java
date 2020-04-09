@@ -210,9 +210,7 @@ public class EventWatchBuilder {
 
         IBuildingForWatching onWatching();
 
-
         IBuildingForBehavior onStrategy(InjectionStrategy strategy);
-
 
         EventWatcher onWatch(AdviceListener adviceListener, Event.Type... eventTypeArray);
 
@@ -765,6 +763,8 @@ public class EventWatchBuilder {
             }
             System.out.print(JSON.toJSONString(behaviorNames));
             final Filter filter = new Filter() {
+                //重新定义javaClassName用来收集信息,由于是单线程不必考虑信息混杂的问题
+                private String javaClassName;
                 @Override
                 public boolean doClassFilter(final int access,
                                              final String javaClassName,
@@ -774,7 +774,9 @@ public class EventWatchBuilder {
                     return (access & bfClass.withAccess) == bfClass.withAccess
                             && patternMatching(javaClassName, bfClass.pattern, patternType)
                             && bfClass.hasInterfaceTypes.patternHas(interfaceTypeJavaClassNameArray)
-                            && bfClass.hasAnnotationTypes.patternHas(annotationTypeJavaClassNameArray);
+                            && bfClass.hasAnnotationTypes.patternHas(annotationTypeJavaClassNameArray)
+                            //将获取的类信息进行赋值处理
+                            && !(this.javaClassName=javaClassName).isEmpty();
                 }
 
                 @Override
