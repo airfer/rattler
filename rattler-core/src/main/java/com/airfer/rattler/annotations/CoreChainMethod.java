@@ -16,4 +16,5 @@ import java.lang.annotation.Target;
 public @interface CoreChainMethod {
     String coreChainName() default "";
     MethodWeightEnum weightEnum() default MethodWeightEnum.LOW;
+    String extend() default "";
 }

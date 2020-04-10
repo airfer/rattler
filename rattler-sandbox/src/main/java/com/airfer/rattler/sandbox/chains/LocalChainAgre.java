@@ -4,9 +4,11 @@ import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
 import com.google.common.base.Splitter;
 import org.apache.commons.io.FileUtils;
+import org.testng.collections.Lists;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -27,7 +29,7 @@ public class LocalChainAgre implements ChainAgreInterface{
     @Override
     public String[] getChainMethods(String identityId,String name) {
         String res = getResultFromLocalFile();
-        Map<String, Map<String, String>> mockResMap = JSONObject.parseObject(res, new TypeReference<Map<String, Map<String, String>>>() {
+        Map<String, Map<String, List<Map<String,String>>>> mockResMap = JSONObject.parseObject(res, new TypeReference<Map<String, Map<String, List<Map<String,String>>>>>() {
         });
         if (!mockResMap.keySet().contains(identityId)) {
             throw new RuntimeException(errorMsgForIdentity);
@@ -35,8 +37,12 @@ public class LocalChainAgre implements ChainAgreInterface{
         if (!mockResMap.get(identityId).keySet().contains(name)) {
             throw new RuntimeException(errorMsgForChainName);
         }
-        String methods = mockResMap.get(identityId).get(name);
-        return Splitter.on(",").omitEmptyStrings().splitToList(methods).toArray(new String[0]);
+        List<Map<String,String>> methodSignatures = mockResMap.get(identityId).get(name);
+        List<String> methods= Lists.newArrayList();
+        for(Map<String,String> methodSignature:methodSignatures){
+            methods.add(methodSignature.get("methodName"));
+        }
+        return methods.toArray(new String[0]);
     }
 
     /**

@@ -4,6 +4,7 @@ import com.airfer.rattler.annotations.CoreChainClass;
 import com.airfer.rattler.annotations.CoreChainMethod;
 import com.airfer.rattler.client.HttpClients;
 import com.airfer.rattler.enums.ErrorCodeEnum;
+import com.airfer.rattler.models.ChainMethodSignature;
 import com.airfer.rattler.utils.FileUtil;
 import com.airfer.rattler.utils.PropertiesProvider;
 import com.alibaba.fastjson.JSON;
@@ -48,8 +49,8 @@ import java.util.stream.Collectors;
 @Component
 public class CoreChain {
 
-    private static ConcurrentMap<String,String> coreChainMap= Maps.newConcurrentMap();
-    private static ConcurrentMap<String,ConcurrentMap<String,String>> response=Maps.newConcurrentMap();
+    private static ConcurrentMap<String,List<ChainMethodSignature>> coreChainMap= Maps.newConcurrentMap();
+    private static ConcurrentMap<String,ConcurrentMap<String,List<ChainMethodSignature>> > response=Maps.newConcurrentMap();
     private static String lastCoreChainMapStr="";
     /**
      * 链路收集开关,true开启
@@ -204,29 +205,18 @@ public class CoreChain {
     }
 
     /**
-     * 更新coreChainInfo的信息
-     * @param chainName
-     * @param methodNameList
+     * 更新链路信息
+     * @param chainMethodSignature 方法签名
      */
-    public static void updateChainMap(String chainName,List<String> methodNameList){
-        //如果信息不存在将获取信息放入Map中
-        coreChainMap.computeIfAbsent(chainName,t ->
-                Joiner.on(",")
-                        .skipNulls()
-                        .join(methodNameList)
-        );
-        //如果该链信息已存在则对保存的值进行去重并合并
-        coreChainMap.computeIfPresent(chainName,(t,oldvalue)->{
-            String rawNameStr=oldvalue + "," + Joiner.on(",").skipNulls().join(methodNameList);
-            return Joiner.on(",").skipNulls().join(
-                    Splitter.on(",")
-                            .omitEmptyStrings()
-                            .splitToList(rawNameStr)
-                            .stream()
-                            .distinct()
-                            .collect(Collectors.toList())
-            );
-        });
+    public static void updateChains(ChainMethodSignature chainMethodSignature) {
+        String coreChainName=chainMethodSignature.getChainName();
+        if(coreChainMap.get(coreChainName) == null){
+            coreChainMap.put(coreChainName,Lists.newArrayList(chainMethodSignature));
+        }
+        List<ChainMethodSignature> chainMethodSignatureList=coreChainMap.get(coreChainName);
+        if(!chainMethodSignatureList.contains(chainMethodSignature)){
+            chainMethodSignatureList.add(chainMethodSignature);
+        }
     }
 
     //定时任务刷新
@@ -282,7 +272,12 @@ public class CoreChain {
                 throw new RuntimeException(ErrorCodeEnum.UNEXCEPTED_ERROR.getMessage());
             }
             CoreChainMethod coreChainMethod = method.getAnnotation(CoreChainMethod.class);
-            updateChainMap(coreChainMethod.coreChainName(), Lists.newArrayList(method.getName()));
+            ChainMethodSignature chainMethodSignature=ChainMethodSignature.builder()
+                    .chainName(coreChainMethod.coreChainName())
+                    .methodName(method.getName())
+                    .methodWeight(coreChainMethod.weightEnum().getCode())
+                    .extend(coreChainMethod.extend()).build();
+            updateChains(chainMethodSignature);
         }
 
         //获取指定类上的注解
@@ -293,10 +288,14 @@ public class CoreChain {
             }
             CoreChainClass coreChainClass=classinfo.getAnnotation(CoreChainClass.class);
             Method[] methods=classinfo.getDeclaredMethods();
-
-            updateChainMap(coreChainClass.coreChainName(),
-                    Arrays.stream(methods).map(method -> method.getName()).collect(Collectors.toList())
-            );
+            for(Method method:methods){
+                ChainMethodSignature chainMethodSignature=ChainMethodSignature.builder()
+                        .chainName(coreChainClass.coreChainName())
+                        .methodName(method.getName())
+                        .methodWeight(coreChainClass.weightEnum().getCode())
+                        .extend(coreChainClass.extend()).build();
+                updateChains(chainMethodSignature);
+            }
         }
     }
 
@@ -304,7 +303,7 @@ public class CoreChain {
      * 链路收集核心方法，用于收集链路信息
      * @return 结果信息
      */
-    public static ConcurrentMap<String,ConcurrentMap<String,String>> coreChainCapture(){
+    public static String coreChainCapture(){
         reflectionsCore();
         //定时任务开启的情况下，如果收集的链路信息和上一次相同，则不进行数据上送
         if(StringUtils.equalsIgnoreCase(lastCoreChainMapStr,JSON.toJSONString(coreChainMap))){
@@ -327,7 +326,7 @@ public class CoreChain {
                 log.error(ErrorCodeEnum.UPLOAD_CORE_CHAIN_FAIL_ERROR.getMessage(),e);
             }
         }
-        return response;
+        return res;
     }
 }
 

@@ -3,6 +3,7 @@ package com.airfer.rattler.sandbox.chains;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
 import com.google.common.base.Splitter;
+import org.testng.collections.Lists;
 
 import java.util.List;
 import java.util.Map;
@@ -24,11 +25,8 @@ public class MockChainAgre implements ChainAgreInterface{
      */
     @Override
     public String[] getChainMethods(String identityId,String name) {
-        String mockRes =
-                "{\"airfer_rattler_test\":" +
-                        "{\"chainName01\":\"MethodWithCoreChainTest02,MethodWithCoreChainTest01,ClassWithCoreChainTest01,ClassWithCoreChainTest02,ClassWithCoreChainTest03,ClassWithCoreChainTest04\"," +
-                        "\"chainName02\":\"MethodWithCoreChainTest03\"}}";
-        Map<String, Map<String, String>> mockResMap = JSONObject.parseObject(mockRes, new TypeReference<Map<String, Map<String, String>>>() {
+        String mockRes = "{\"airfer_rattler_test\":{\"chainName01\":[{\"chainName\":\"chainName01\",\"extend\":\"\",\"methodName\":\"MethodWithCoreChainTest02\",\"methodWeight\":1},{\"chainName\":\"chainName01\",\"extend\":\"\",\"methodName\":\"MethodWithCoreChainTest01\",\"methodWeight\":1},{\"chainName\":\"chainName01\",\"extend\":\"\",\"methodName\":\"ClassWithCoreChainTest01\",\"methodWeight\":1},{\"chainName\":\"chainName01\",\"extend\":\"\",\"methodName\":\"ClassWithCoreChainTest04\",\"methodWeight\":1},{\"chainName\":\"chainName01\",\"extend\":\"\",\"methodName\":\"ClassWithCoreChainTest02\",\"methodWeight\":1},{\"chainName\":\"chainName01\",\"extend\":\"\",\"methodName\":\"ClassWithCoreChainTest03\",\"methodWeight\":1}],\"chainName02\":[{\"chainName\":\"chainName02\",\"extend\":\"\",\"methodName\":\"MethodWithCoreChainTest03\",\"methodWeight\":1}]}}";
+        Map<String, Map<String, List<Map<String,String>>>> mockResMap = JSONObject.parseObject(mockRes, new TypeReference<Map<String, Map<String, List<Map<String,String>>>>>() {
         });
         if (!mockResMap.keySet().contains(identityId)) {
             throw new RuntimeException(errorMsgForIdentity);
@@ -36,7 +34,11 @@ public class MockChainAgre implements ChainAgreInterface{
         if (!mockResMap.get(identityId).keySet().contains(name)) {
             throw new RuntimeException(errorMsgForChainName);
         }
-        String methods = mockResMap.get(identityId).get(name);
-        return Splitter.on(",").omitEmptyStrings().splitToList(methods).toArray(new String[0]);
+        List<Map<String,String>> methodSignatures = mockResMap.get(identityId).get(name);
+        List<String> methods= Lists.newArrayList();
+        for(Map<String,String> methodSignature:methodSignatures){
+            methods.add(methodSignature.get("methodName"));
+        }
+        return methods.toArray(new String[0]);
     }
 }

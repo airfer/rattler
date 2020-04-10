@@ -1,5 +1,6 @@
 package com.airfer.rattler.sandbox.WatchBuilderTest;
 
+import com.airfer.rattler.sandbox.chains.LocalChainAgre;
 import com.airfer.rattler.sandbox.chains.MockChainAgre;
 import com.airfer.rattler.sandbox.mock.ModuleEventWatcherForMock;
 import com.airfer.rattler.sandbox.strategys.RandomStrategy;

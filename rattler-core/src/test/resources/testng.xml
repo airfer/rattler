@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
 
-<suite name="etcp-test" verbose="1" >
-    <test name="etcp-account">
+<suite name="rattler-all" verbose="1" >
+    <test name="core-chain">
         <classes>
             <class name="com.airfer.rattler.chain.CoreChainTest"/>
             <class name="com.airfer.rattler.chain.ProtertiesTest"/>
