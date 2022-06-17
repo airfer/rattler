@@ -24,7 +24,7 @@
         <annotations-version>2.0.1</annotations-version>
         <guava-version>28.0-jre</guava-version>
         <reflections-version>0.9.11</reflections-version>
-        <fastjson-version>1.2.61</fastjson-version>
+        <fastjson-version>1.2.83</fastjson-version>
         <commons-lang3-version>3.9</commons-lang3-version>
         <assertj-core-verson>3.13.2</assertj-core-verson>
         <commons-csv-version>1.7</commons-csv-version>
